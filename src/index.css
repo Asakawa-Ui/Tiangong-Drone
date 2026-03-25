@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #D5E4FF;
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #C1D6FF;
+  }
+
+  .uav-glass {
+    background: linear-gradient(180deg, rgba(255,255,255,.82), rgba(246,249,253,.74));
+    backdrop-filter: blur(24px) saturate(120%);
+    -webkit-backdrop-filter: blur(24px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 4px 12px rgba(46,73,108,0.04), 0 12px 32px rgba(46,73,108,0.08), inset 0 1px 0 rgba(255,255,255,0.92);
+  }
+
+  .uav-glass-active {
+    background: linear-gradient(180deg, rgba(255,255,255,.82), rgba(246,249,253,.74));
+    backdrop-filter: blur(24px) saturate(120%);
+    -webkit-backdrop-filter: blur(24px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 4px 12px rgba(46,73,108,0.06), 0 16px 48px rgba(46,73,108,0.12), inset 0 1px 0 rgba(255,255,255,0.92);
+  }
+
+  .uav-inset {
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05), inset 0 1px 2px rgba(0, 0, 0, 0.03);
+  }
+}
