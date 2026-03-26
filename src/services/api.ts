@@ -10,6 +10,9 @@ export interface Airspace {
 export interface Sortie {
   id: string;
   code: string;
+  status?: string;
+  time?: string;
+  planName?: string;
 }
 
 export interface Plan {
@@ -17,6 +20,7 @@ export interface Plan {
   name: string;
   version: string;
   updateTime: string;
+  status?: string;
 }
 
 export interface Notification {
@@ -94,7 +98,8 @@ export const api = {
     await delay(400);
     return {
       id: 's1',
-      code: 'UAS04498385'
+      code: 'UAS06399445_20260408_01',
+      planName: '青海外场试飞计划方案'
     };
   },
 
@@ -103,10 +108,30 @@ export const api = {
     await delay(600);
     return {
       id: 'p1',
-      name: '青海外场试验试飞方案',
+      name: '青海外场试飞计划方案',
       version: 'V4',
       updateTime: '12:37'
     };
+  },
+
+  // 获取实况架次列表
+  async getSorties(): Promise<Sortie[]> {
+    await delay(300);
+    return [
+      { id: 's1', code: 'UAS06399445_20260408_01', status: '飞行中', time: '07:02 - 至今', planName: '青海外场试飞计划方案' },
+      { id: 's2', code: 'UAS06399445_20260408_01', status: '已完成', time: '昨日 14:00 - 16:30', planName: 'AJBGDOJrndDJ4...' },
+      { id: 's3', code: 'UAS06399445_20260408_01', status: '已计划', time: '明日 08:00', planName: '常规巡检方案 - V1' },
+    ];
+  },
+
+  // 获取飞行方案列表
+  async getPlans(): Promise<Plan[]> {
+    await delay(300);
+    return [
+      { id: 'p1', name: '青海外场试验试飞方案', version: 'V4', updateTime: '12:37', status: '当前生效' },
+      { id: 'p2', name: '祁连山区增雨作业方案', version: 'V2', updateTime: '昨日 15:20', status: '历史方案' },
+      { id: 'p3', name: '三江源生态监测方案', version: 'V1', updateTime: '03-20 09:15', status: '历史方案' },
+    ];
   },
 
   // 获取告警通知
@@ -118,7 +143,7 @@ export const api = {
         type: 'danger',
         title: '危险区告警',
         message: '架次 {h1} 的当前生效预飞航线与危险区 {h2} 存在交汇风险，建议立即核查并调整航线。',
-        highlight1: 'UAS04498385',
+        highlight1: 'UAS06399445_20260408_01',
         highlight2: '手动危险区-01'
       },
       {
@@ -126,14 +151,14 @@ export const api = {
         type: 'potential',
         title: '潜力区提醒',
         message: '架次 {h1} 的当前生效预飞航线未覆盖有效潜力区，可能无法满足本次作业目标。',
-        highlight1: 'UAS04498385'
+        highlight1: 'UAS06399445_20260408_01'
       },
       {
         id: 'n3',
         type: 'airspace',
         title: '空域告警',
         message: '架次 {h1} 的当前生效预飞航线进入未批复通过空域 {h2} ，当前状态下不满足放行条件。',
-        highlight1: 'UAS04498385',
+        highlight1: 'UAS06399445_20260408_01',
         highlight2: '13区'
       }
     ];

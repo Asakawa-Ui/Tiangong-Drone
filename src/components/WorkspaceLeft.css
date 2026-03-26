@@ -28,6 +28,8 @@
   height: 100%;
   width: 460px;
   flex-shrink: 0;
+  position: relative;
+  overflow: visible;
 }
 
 .panel-controls-bar {
@@ -65,7 +67,7 @@
 }
 
 .left-top > .workspace-card {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .workspace-card {
@@ -75,6 +77,11 @@
 .panel-inner {
   padding: 16px;
   height: 100%;
+}
+
+.panel-inner.scrollable {
+  padding-right: 6px; /* 减小右边距，使滚动条更靠右 */
+  overflow-y: auto;
 }
 
 .section-head {
@@ -354,23 +361,64 @@
   display: none;
   flex: 1;
   min-height: 0;
-  padding: 16px 22px 22px;
+  padding: 0;
   overflow: hidden;
   background: transparent;
   border-top: none;
+  position: relative;
+}
+
+.tab-panel-bg {
+  position: absolute;
+  top: 16px;
+  left: 22px;
+  right: 22px;
+  bottom: 22px;
+  background: rgba(230, 235, 240, 0.6);
+  border-radius: 14px;
+  z-index: 0;
+  pointer-events: none;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05), inset 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.tab-panel-scroll {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  z-index: 1;
+  padding-right: 24px; /* 进一步增加右边距，使滚动条往左挪 */
+  /* 使用 mask 裁剪内容，使其只在背景框内可见，但保留最右侧滚动条区域 */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 16px, black 16px, black calc(100% - 22px), transparent calc(100% - 22px)),
+                      linear-gradient(to right, transparent calc(100% - 32px), black calc(100% - 32px));
+  -webkit-mask-composite: source-over;
+  mask-image: linear-gradient(to bottom, transparent 16px, black 16px, black calc(100% - 22px), transparent calc(100% - 22px)),
+              linear-gradient(to right, transparent calc(100% - 32px), black calc(100% - 32px));
+  mask-composite: add;
+}
+
+.tab-panel.scrollable {
+  overflow-y: auto;
+  padding: 16px 12px 22px; /* 减小内边距，使其不显内凹 */
+}
+
+.tab-panel-content {
+  padding: 16px 22px 22px;
+  min-height: 100%;
 }
 
 .tab-panel.active {
-  display: flex;
-  flex-direction: column;
+  display: block; /* 改为 block，因为内部使用 absolute 定位 */
 }
 
 .timeline-box {
-  height: 100%;
+  width: 100%;
   border-radius: 14px;
-  background: rgba(230, 235, 240, 0.6);
+  background: transparent; /* 背景移到 tab-panel-bg */
   padding: 4px 0 6px;
-  overflow: auto;
+  height: auto;
+  overflow: visible;
 }
 
 .timeline {
@@ -425,6 +473,10 @@
 
 .timeline-item.info .timeline-dot {
   border-color: var(--info);
+}
+
+.timeline-item.warning .timeline-dot {
+  border-color: #d9a33e;
 }
 
 .timeline-meta {
@@ -545,7 +597,7 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  overflow: auto;
+  overflow: visible;
   padding-right: 2px;
 }
 
@@ -633,7 +685,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  overflow: auto;
+  overflow: visible;
   padding-right: 2px;
 }
 
@@ -666,7 +718,7 @@
 }
 
 .layer-section.potential .layer-accent {
-  background: #2f63f6;
+  background: #15803D; /* 与潜力区提醒一致的绿色 */
 }
 
 .layer-title {
@@ -772,6 +824,11 @@
 
 .toggle.on::after {
   left: 37px;
+}
+
+.right-scrollbar {
+  margin-right: 0;
+  padding-right: 6px;
 }
 
 .more-wrap {
