@@ -5,16 +5,23 @@
   --soft-card: #f5f7fb;
   --line: #e8edf5;
   --line-soft: #edf2f8;
-  --primary: #2f63f6;
+  --primary: #2F63F6;
   --primary-deep: #2757df;
   --text-1: #1f2937;
   --text-2: #4b5563;
   --text-3: #6b7280;
   --text-4: #94a3b8;
   --map-bg: #eef5fd;
-  --danger: #c93b2b;
+  --danger: #A92F41;
   --success: #2f8b61;
-  --info: #2f63f6;
+  --info: #2F63F6;
+
+  /* New Color Palette from User */
+  --color-primary: #2F63F6;
+  --color-secondary: #686CD5;
+  --color-tertiary: #B055A4;
+  --color-emphasis: #A92F41;
+  --color-neutral: #F8FAFC;
   --shadow-sm: 0 6px 16px rgba(19, 43, 78, 0.05);
   --shadow-md: 0 16px 40px rgba(49, 86, 145, 0.12);
   --radius-lg: 18px;
@@ -537,9 +544,9 @@
   align-items: center;
   justify-content: center;
   border-radius: 11px;
-  background: #eaf0ff;
-  border: 1px solid #d9e4ff;
-  color: #2f63f6;
+  background: #f7eef5;
+  border: 1px solid #e8d1e3;
+  color: #B055A4;
   font-size: 15px;
   font-weight: 800;
   line-height: 1.3;
@@ -565,9 +572,9 @@
   min-width: 40px;
   border: none;
   border-radius: 14px;
-  background: linear-gradient(180deg, #3b6df8 0%, #2e5fe7 100%);
+  background: linear-gradient(180deg, #7a7ee0 0%, #686CD5 100%);
   color: #fff;
-  box-shadow: 0 8px 18px rgba(47, 99, 246, 0.22);
+  box-shadow: 0 8px 18px rgba(104, 108, 213, 0.22);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -713,7 +720,7 @@
   width: 6px;
   height: 38px;
   border-radius: 999px;
-  background: #c4344c;
+  background: #EAB308; /* Yellow for Danger Zone */
   flex: 0 0 auto;
 }
 

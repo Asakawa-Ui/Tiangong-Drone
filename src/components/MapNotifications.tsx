@@ -5,9 +5,10 @@ import { api, Notification } from '../services/api';
 
 interface MapNotificationsProps {
   isFullscreen?: boolean;
+  currentSortie?: any;
 }
 
-export default function MapNotifications({ isFullscreen }: MapNotificationsProps) {
+export default function MapNotifications({ isFullscreen, currentSortie }: MapNotificationsProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [visible, setVisible] = useState<Record<string, boolean>>({
     danger: true,
@@ -18,14 +19,14 @@ export default function MapNotifications({ isFullscreen }: MapNotificationsProps
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const data = await api.getNotifications();
+        const data = await api.getNotifications(currentSortie?.code);
         setNotifications(data);
       } catch (error) {
         console.error("Failed to fetch notifications", error);
       }
     };
     fetchNotifications();
-  }, []);
+  }, [currentSortie]);
 
   const getNotification = (type: string) => notifications.find(n => n.type === type);
   const dangerNotif = getNotification('danger');
@@ -51,11 +52,11 @@ export default function MapNotifications({ isFullscreen }: MapNotificationsProps
       <motion.div layout className="relative pl-6" animate={{ height: visible.danger ? 'auto' : 56 }}>
         <motion.div 
           layout
-          className="absolute left-0 w-[56px] h-[56px] bg-[#C87D35] rounded-2xl flex items-center justify-center z-10 cursor-pointer"
+          className="absolute left-0 w-[56px] h-[56px] bg-[#EAB308] rounded-2xl flex items-center justify-center z-10 cursor-pointer"
           animate={{ 
             top: visible.danger ? 16 : 0,
             scale: visible.danger ? 1 : [1, 1.05, 1], 
-            boxShadow: visible.danger ? "none" : ["0px 0px 0px rgba(200,125,53,0)", "0px 0px 15px rgba(200,125,53,0.6)", "0px 0px 0px rgba(200,125,53,0)"] 
+            boxShadow: visible.danger ? "none" : ["0px 0px 0px rgba(234,179,8,0)", "0px 0px 15px rgba(234,179,8,0.6)", "0px 0px 0px rgba(234,179,8,0)"] 
           }}
           transition={!visible.danger ? { scale: { repeat: Infinity, duration: 2 }, boxShadow: { repeat: Infinity, duration: 2 } } : { type: "spring", stiffness: 300, damping: 25 }}
           onClick={() => setVisible(v => ({...v, danger: !v.danger}))}
@@ -81,10 +82,10 @@ export default function MapNotifications({ isFullscreen }: MapNotificationsProps
                   </button>
                 </div>
                 <p className="text-[14px] text-[#5B6575] leading-relaxed mb-4">
-                  {dangerNotif ? renderMessage(dangerNotif.message, dangerNotif.highlight1, dangerNotif.highlight2, 'text-[#C87D35]') : '加载中...'}
+                  {dangerNotif ? renderMessage(dangerNotif.message, dangerNotif.highlight1, dangerNotif.highlight2, 'text-[#EAB308]') : '加载中...'}
                 </p>
                 <div className="flex gap-2.5">
-                  <button className="bg-[#C87D35] hover:bg-[#D98A3C] text-white px-4 py-1.5 rounded-lg text-[14px] font-bold transition-colors">
+                  <button className="bg-[#EAB308] hover:bg-[#D9A306] text-white px-4 py-1.5 rounded-lg text-[14px] font-bold transition-colors">
                     查看危险区
                   </button>
                   <button className="bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#1F2937] px-4 py-1.5 rounded-lg text-[14px] font-bold transition-colors">

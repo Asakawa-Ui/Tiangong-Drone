@@ -2,14 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { ComposedChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { api, RadarData } from '../services/api';
 
-export default function RadarProfileTab() {
+export default function RadarProfileTab({ currentSortie }: { currentSortie?: any }) {
   const [data, setData] = useState<RadarData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const radarData = await api.getRadarData();
+        setIsLoading(true);
+        const radarData = await api.getRadarData(currentSortie?.code);
         setData(radarData);
       } catch (error) {
         console.error("Failed to fetch radar data", error);
@@ -18,7 +19,7 @@ export default function RadarProfileTab() {
       }
     };
     fetchData();
-  }, []);
+  }, [currentSortie]);
 
   return (
     <div className="flex-1 p-4 min-h-0 w-full h-full flex flex-col relative">

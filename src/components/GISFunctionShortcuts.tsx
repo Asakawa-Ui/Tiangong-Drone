@@ -7,17 +7,17 @@ import { MapPin, SatelliteDish, Star, ChevronDown, Check, FileText, Layers } fro
  */
 export default function GISFunctionShortcuts() {
   const [activeTopButton, setActiveTopButton] = useState('distribution');
-  const [isPanelExpanded, setIsPanelExpanded] = useState(true);
-  const [isToolbarExpanded, setIsToolbarExpanded] = useState(true);
+  const [isPanelExpanded, setIsPanelExpanded] = useState(false);
+  const [isToolbarExpanded, setIsToolbarExpanded] = useState(false);
   const [weatherTab, setWeatherTab] = useState('warning');
   const [activeSubCategory, setActiveSubCategory] = useState<string | null>('SWAN雷达');
   const [activeSubProduct, setActiveSubProduct] = useState<string | null>('反射率临近预报');
   
   const [sections, setSections] = useState({
-    map: true,
-    operation: true,
-    plot: true,
-    tool: true
+    map: false,
+    operation: false,
+    plot: false,
+    tool: false
   });
 
   const toggleSection = (key: keyof typeof sections) => {

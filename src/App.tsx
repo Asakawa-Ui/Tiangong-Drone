@@ -4,6 +4,7 @@ import LeftNav from './components/LeftNav';
 import MapArea from './components/MapArea';
 import TabContainer from './components/TabContainer';
 import WorkspaceLeft from './components/WorkspaceLeft';
+import { Sortie } from './services/api';
 
 export default function App() {
   const [leftNavIndex, setLeftNavIndex] = useState(4); // 4 is 指挥实施
@@ -18,14 +19,37 @@ export default function App() {
     uavVideo: true
   });
 
+  // 当前选中的架次
+  const [currentSortie, setCurrentSortie] = useState<Sortie | null>(null);
+  
+  // 架次航线的显隐状态
+  const [sortieVisibility, setSortieVisibility] = useState<Record<string, boolean>>({
+    s1: true,
+    s2: true,
+    s3: false
+  });
+
+  // 预飞航线显隐状态
+  const [isRouteVisible, setIsRouteVisible] = useState(true);
+  
+  // 当前生效的预飞航线版本
+  const [activeRoute, setActiveRoute] = useState('V1');
+
+  // 战术图层显隐状态
+  const [activeLayers, setActiveLayers] = useState({
+    danger1: true,
+    danger2: false,
+    potential1: true
+  });
+
   return (
     <div className="flex flex-col w-screen h-screen overflow-hidden bg-white font-sans text-[#333333]">
       <TopNav />
       <div className="flex flex-1 overflow-hidden relative">
-        <LeftNav selectedIndex={leftNavIndex} setSelectedIndex={setLeftNavIndex} />
+        {!isMapFullscreen && <LeftNav selectedIndex={leftNavIndex} setSelectedIndex={setLeftNavIndex} />}
         
         {/* Main Content Area Background */}
-        <div className="flex flex-col flex-1 overflow-hidden bg-[#F8FAFF] p-[12px]">
+        <div className={`flex flex-col flex-1 overflow-hidden bg-[#F8FAFF] ${isMapFullscreen ? 'p-0' : 'p-[12px]'}`}>
           
           {leftNavIndex === 4 ? (
             <TabContainer
@@ -53,15 +77,28 @@ export default function App() {
                       {/* 左侧容器框 */}
                       <div className={
                         isMapFullscreen
-                          ? "fixed top-[20px] left-[20px] bottom-[20px] z-[60] flex flex-col gap-[12px]"
+                          ? "fixed top-[90px] left-[20px] bottom-[20px] z-[60] flex flex-col gap-[12px]"
                           : "h-full shrink-0 flex flex-col gap-[12px]"
                       }>
-                        <WorkspaceLeft panelStates={panelStates} setPanelStates={setPanelStates} />
+                        <WorkspaceLeft 
+                          panelStates={panelStates} 
+                          setPanelStates={setPanelStates}
+                          currentSortie={currentSortie}
+                          setCurrentSortie={setCurrentSortie}
+                          sortieVisibility={sortieVisibility}
+                          setSortieVisibility={setSortieVisibility}
+                          isRouteVisible={isRouteVisible}
+                          setIsRouteVisible={setIsRouteVisible}
+                          activeRoute={activeRoute}
+                          setActiveRoute={setActiveRoute}
+                          activeLayers={activeLayers}
+                          setActiveLayers={setActiveLayers}
+                        />
                       </div>
                       {/* 右侧容器框：放地图 */}
                       <div className={
                         isMapFullscreen
-                          ? "fixed inset-0 z-50 bg-[#F8FAFF]"
+                          ? "fixed top-[70px] inset-x-0 bottom-0 z-50 bg-[#F8FAFF]"
                           : "flex-1 h-full relative border border-[#C1D6FF] rounded-[5px] overflow-hidden"
                       }>
                         <MapArea 
@@ -69,6 +106,11 @@ export default function App() {
                           onToggleFullscreen={() => setIsMapFullscreen(!isMapFullscreen)} 
                           panelStates={panelStates}
                           setPanelStates={setPanelStates}
+                          currentSortie={currentSortie}
+                          sortieVisibility={sortieVisibility}
+                          isRouteVisible={isRouteVisible}
+                          activeRoute={activeRoute}
+                          activeLayers={activeLayers}
                         />
                       </div>
                     </div>

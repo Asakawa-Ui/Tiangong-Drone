@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Video, Maximize, Minimize, Camera } from 'lucide-react';
 import DraggablePanel from './DraggablePanel';
 
-export default function UavVideoPanel({ onClose }: { onClose: () => void }) {
+export default function UavVideoPanel({ onClose, currentSortie, isVisible = true }: { onClose: () => void, currentSortie?: any, isVisible?: boolean }) {
   const [stream, setStream] = useState('光电吊舱');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const videoContainerRef = useRef<HTMLDivElement>(null);
@@ -46,8 +46,9 @@ export default function UavVideoPanel({ onClose }: { onClose: () => void }) {
         </>
       }
       onClose={onClose}
-      defaultPosition={{ x: 380, y: 440 }}
-      defaultSize={{ width: 640, height: 420 }}
+      isVisible={isVisible}
+      defaultPosition={{ x: 1100, y: 480 }}
+      defaultSize={{ width: 700, height: 450 }}
       minWidth={500}
       minHeight={350}
     >

@@ -26,6 +26,7 @@ interface DraggablePanelProps {
   defaultSize?: { width: number | string; height: number | string };
   minWidth?: number;
   minHeight?: number;
+  isVisible?: boolean;
 }
 
 export default function DraggablePanel({
@@ -38,7 +39,8 @@ export default function DraggablePanel({
   defaultPosition = { x: 100, y: 100 },
   defaultSize = { width: 600, height: 500 },
   minWidth = 500,
-  minHeight = 400
+  minHeight = 400,
+  isVisible = true
 }: DraggablePanelProps) {
   const [zIndex, setZIndex] = useState(() => getNextZIndex());
 
@@ -53,7 +55,7 @@ export default function DraggablePanel({
       minHeight={minHeight}
       bounds="parent"
       dragHandleClassName="drag-handle"
-      className="absolute"
+      className={`absolute ${isVisible ? 'block' : 'hidden'}`}
       style={{ zIndex }}
       onDragStart={bringToFront}
     >

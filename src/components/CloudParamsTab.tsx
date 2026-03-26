@@ -56,7 +56,7 @@ const ChartRow = ({ dataKey, name, color, data, yDomain, chartType }: any) => (
   </div>
 );
 
-export default function CloudParamsTab() {
+export default function CloudParamsTab({ currentSortie }: { currentSortie?: any }) {
   const [activeSubTab, setActiveSubTab] = useState('CDP探头');
   const [chartType, setChartType] = useState<'line' | 'scatter'>('line');
   const [data, setData] = useState<CloudData[]>([]);
@@ -65,7 +65,8 @@ export default function CloudParamsTab() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const cloudData = await api.getCloudData();
+        setIsLoading(true);
+        const cloudData = await api.getCloudData(currentSortie?.code);
         setData(cloudData);
       } catch (error) {
         console.error("Failed to fetch cloud data", error);
@@ -74,7 +75,7 @@ export default function CloudParamsTab() {
       }
     };
     fetchData();
-  }, []);
+  }, [currentSortie]);
 
   return (
     <div className="flex-1 w-full h-full flex flex-col bg-white min-h-0 relative">

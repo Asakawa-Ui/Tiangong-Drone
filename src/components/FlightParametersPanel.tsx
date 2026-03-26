@@ -24,7 +24,7 @@ const metrics = [
   { key: 'heading', name: '航向', color: '#1D4ED8', unit: '°', orientation: 'left', domain: [0, 360] },
 ];
 
-export default function FlightParametersPanel({ onClose }: { onClose?: () => void }) {
+export default function FlightParametersPanel({ onClose, currentSortie, isVisible = true }: { onClose?: () => void, currentSortie?: any, isVisible?: boolean }) {
   const [activeTab, setActiveTab] = useState('飞行参数');
   const [data, setData] = useState<FlightData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,9 +37,11 @@ export default function FlightParametersPanel({ onClose }: { onClose?: () => voi
   });
 
   useEffect(() => {
+    if (!isVisible) return; // Don't fetch data if not visible
     const fetchData = async () => {
       try {
-        const flightData = await api.getFlightData();
+        setIsLoading(true);
+        const flightData = await api.getFlightData(currentSortie?.code);
         setData(flightData);
       } catch (error) {
         console.error("Failed to fetch flight data", error);
@@ -48,7 +50,7 @@ export default function FlightParametersPanel({ onClose }: { onClose?: () => voi
       }
     };
     fetchData();
-  }, []);
+  }, [currentSortie]);
 
   const toggleMetric = (key: string) => {
     setVisibleMetrics(prev => ({ ...prev, [key]: !prev[key] }));
@@ -84,7 +86,8 @@ export default function FlightParametersPanel({ onClose }: { onClose?: () => voi
       activeTab={activeTab}
       onTabChange={setActiveTab}
       onClose={onClose}
-      defaultPosition={{ x: 400, y: 50 }}
+      isVisible={isVisible}
+      defaultPosition={{ x: 1100, y: 20 }}
       defaultSize={{ width: 700, height: 450 }}
       minWidth={400}
       minHeight={300}
@@ -191,9 +194,9 @@ export default function FlightParametersPanel({ onClose }: { onClose?: () => voi
           </>
         )}
         
-        {activeTab === '雷达剖面' && <RadarProfileTab />}
-        {activeTab === '云参数' && <CloudParamsTab />}
-        {activeTab === '危险监测' && <IcingMonitorTab />}
+        {activeTab === '雷达剖面' && <RadarProfileTab currentSortie={currentSortie} />}
+        {activeTab === '云参数' && <CloudParamsTab currentSortie={currentSortie} />}
+        {activeTab === '危险监测' && <IcingMonitorTab currentSortie={currentSortie} />}
     </DraggablePanel>
   );
 }

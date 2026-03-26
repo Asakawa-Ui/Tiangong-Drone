@@ -20,15 +20,17 @@ const CustomDot = (props: any) => {
   return <circle cx={cx} cy={cy} r={2.5} fill={fill} />;
 };
 
-export default function OperationConditionPanel({ onClose }: { onClose: () => void }) {
+export default function OperationConditionPanel({ onClose, currentSortie, isVisible = true }: { onClose: () => void, currentSortie?: any, isVisible?: boolean }) {
   const [timeFilter, setTimeFilter] = useState('全部');
   const [data, setData] = useState<OperationConditionData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!isVisible) return;
     const fetchData = async () => {
       try {
-        const conditionData = await api.getOperationConditionData();
+        setIsLoading(true);
+        const conditionData = await api.getOperationConditionData(currentSortie?.code);
         setData(conditionData);
       } catch (error) {
         console.error("Failed to fetch operation condition data", error);
@@ -37,7 +39,7 @@ export default function OperationConditionPanel({ onClose }: { onClose: () => vo
       }
     };
     fetchData();
-  }, []);
+  }, [currentSortie]);
 
   return (
     <DraggablePanel
@@ -48,7 +50,8 @@ export default function OperationConditionPanel({ onClose }: { onClose: () => vo
         </>
       }
       onClose={onClose}
-      defaultPosition={{ x: 800, y: 80 }}
+      isVisible={isVisible}
+      defaultPosition={{ x: 480, y: 80 }}
       defaultSize={{ width: 600, height: 500 }}
     >
       <div className="flex-1 flex flex-col min-h-0 bg-white relative">

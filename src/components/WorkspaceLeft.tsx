@@ -2,7 +2,73 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Plane, Route, MoreVertical, Settings, ChevronLeft, X, Check } from 'lucide-react';
 import './WorkspaceLeft.css';
 import { Radio, Switch } from './ui/SelectionControls';
+import Button from './ui/Button';
 import { api, Airspace, Sortie, Plan } from '../services/api';
+
+function CustomTimePicker({ value, onChange }: { value: string, onChange: (val: string) => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  const [hour, minute] = value.split(':');
+
+  const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+  const minutes = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+
+  return (
+    <div className="relative flex-1" ref={dropdownRef}>
+      <div 
+        className="bg-[#F0F4FA] rounded-md px-2 py-1 text-[12px] font-bold text-[#1F2937] cursor-pointer text-center hover:bg-[#E4E9F2] transition-colors"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        {value}
+      </div>
+      {isOpen && (
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 bg-white border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.1)] rounded-xl p-2 z-[1003] flex gap-2 w-[120px]">
+          <div className="flex-1 h-[120px] overflow-y-auto custom-scrollbar pr-1">
+            {hours.map(h => (
+              <div 
+                key={h}
+                className={`text-center py-1 text-[12px] cursor-pointer rounded-md ${h === hour ? 'bg-[#2F63F6] text-white font-bold' : 'hover:bg-[#F0F4FA] text-[#5B6575]'}`}
+                onClick={() => {
+                  onChange(`${h}:${minute}`);
+                }}
+              >
+                {h}
+              </div>
+            ))}
+          </div>
+          <div className="w-[1px] bg-gray-100 shrink-0"></div>
+          <div className="flex-1 h-[120px] overflow-y-auto custom-scrollbar pr-1">
+            {minutes.map(m => (
+              <div 
+                key={m}
+                className={`text-center py-1 text-[12px] cursor-pointer rounded-md ${m === minute ? 'bg-[#2F63F6] text-white font-bold' : 'hover:bg-[#F0F4FA] text-[#5B6575]'}`}
+                onClick={() => {
+                  onChange(`${hour}:${m}`);
+                  setIsOpen(false);
+                }}
+              >
+                {m}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function MoreMenu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -52,32 +118,55 @@ interface WorkspaceLeftProps {
     opCondition: boolean;
     uavVideo: boolean;
   }>>;
+  currentSortie?: Sortie | null;
+  setCurrentSortie?: React.Dispatch<React.SetStateAction<Sortie | null>>;
+  sortieVisibility?: Record<string, boolean>;
+  setSortieVisibility?: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  isRouteVisible?: boolean;
+  setIsRouteVisible?: React.Dispatch<React.SetStateAction<boolean>>;
+  activeRoute?: string;
+  setActiveRoute?: React.Dispatch<React.SetStateAction<string>>;
+  activeLayers: { danger1: boolean; danger2: boolean; potential1: boolean };
+  setActiveLayers: React.Dispatch<React.SetStateAction<{ danger1: boolean; danger2: boolean; potential1: boolean }>>;
 }
 
-export default function WorkspaceLeft({ panelStates, setPanelStates }: WorkspaceLeftProps) {
+export default function WorkspaceLeft({ 
+  panelStates, 
+  setPanelStates,
+  currentSortie,
+  setCurrentSortie,
+  sortieVisibility,
+  setSortieVisibility,
+  isRouteVisible = true,
+  setIsRouteVisible,
+  activeRoute = 'V1',
+  setActiveRoute,
+  activeLayers,
+  setActiveLayers
+}: WorkspaceLeftProps) {
   const [activeSortieTab, setActiveSortieTab] = useState('current'); // 'current' | 'plan'
   const [activeRecordTab, setActiveRecordTab] = useState('record'); // 'record' | 'route' | 'layer'
-  const [isRouteVisible, setIsRouteVisible] = useState(true);
-  const [activeRoute, setActiveRoute] = useState('V2');
-  const [activeLayers, setActiveLayers] = useState({
-    danger1: true,
-    danger2: false,
-    potential1: true
-  });
+  // const [isRouteVisible, setIsRouteVisible] = useState(true); // Removed local state
+  // const [activeRoute, setActiveRoute] = useState('V2'); // Removed local state
+  // const [activeLayers, setActiveLayers] = useState({ // Removed local state
+  //   danger1: true,
+  //   danger2: false,
+  //   potential1: true
+  // });
 
   const [airspaces, setAirspaces] = useState<Airspace[]>([]);
-  const [currentSortie, setCurrentSortie] = useState<Sortie | null>(null);
+  // const [currentSortie, setCurrentSortie] = useState<Sortie | null>(null); // Removed local state
   const [currentPlan, setCurrentPlan] = useState<Plan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const [expandedView, setExpandedView] = useState<'none' | 'sortie' | 'plan'>('none');
   const [sorties, setSorties] = useState<Sortie[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [sortieVisibility, setSortieVisibility] = useState<Record<string, boolean>>({
-    s1: true,
-    s2: true,
-    s3: false
-  });
+  // const [sortieVisibility, setSortieVisibility] = useState<Record<string, boolean>>({ // Removed local state
+  //   s1: true,
+  //   s2: true,
+  //   s3: false
+  // });
   const [isAirspaceSettingsOpen, setIsAirspaceSettingsOpen] = useState(false);
   const airspaceSettingsRef = useRef<HTMLDivElement>(null);
   const timelineBoxRef = useRef<HTMLDivElement>(null);
@@ -153,6 +242,28 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
     setIsAirspaceSettingsOpen(false);
   };
 
+  const routeVersions = [
+    { id: 'V4', name: '应急绕飞航线', time: '12:37' },
+    { id: 'V3', name: '应急响应预案', time: '11:30' },
+    { id: 'V2', name: '标准巡检路线', time: '10:00' },
+    { id: 'V1', name: '初始地形扫描', time: '08:15' },
+  ];
+
+  useEffect(() => {
+    if (activeRoute && plans.length > 0) {
+      const info = routeVersions.find(v => v.id === activeRoute);
+      if (info) {
+        setCurrentPlan({
+          id: 'p-' + activeRoute,
+          name: '青海外场试飞计划方案',
+          version: activeRoute,
+          updateTime: info.time,
+          status: '当前'
+        });
+      }
+    }
+  }, [activeRoute, plans]);
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -165,7 +276,11 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
           api.getPlans()
         ]);
         setAirspaces(airspacesData);
-        setCurrentSortie(sortieData);
+        setCurrentSortie?.(sortieData);
+        // Sync activeRoute with initial currentPlan if not already set
+        if (planData && !activeRoute) {
+          setActiveRoute?.(planData.version);
+        }
         setCurrentPlan(planData);
         setSorties(sortiesList);
         setPlans(plansList);
@@ -220,7 +335,7 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
                         key={s.id} 
                         className={`flex items-center bg-white uav-inset rounded-xl p-2 cursor-pointer border-2 transition-all mb-2 shrink-0 ${currentSortie?.id === s.id ? 'border-[#2F63F6] bg-[#F5F8FF] shadow-[0_4px_12px_rgba(47,99,246,0.1)]' : 'border-transparent hover:border-gray-200'}`}
                         onClick={() => {
-                          setCurrentSortie(s);
+                          setCurrentSortie?.(s);
                           setExpandedView('none');
                           setActiveSortieTab('current');
                         }}
@@ -234,8 +349,8 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
                         </div>
                         <div className="w-14 flex justify-center shrink-0" onClick={(e) => e.stopPropagation()}>
                           <Switch 
-                            checked={sortieVisibility[s.id] ?? false} 
-                            onChange={(checked) => setSortieVisibility(prev => ({ ...prev, [s.id]: checked }))} 
+                            checked={sortieVisibility?.[s.id] ?? false} 
+                            onChange={(checked) => setSortieVisibility?.(prev => ({ ...prev, [s.id]: checked }))} 
                             className="scale-110"
                           />
                         </div>
@@ -281,7 +396,7 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
             >
               <div className="panel-inner w-full flex flex-col h-full">
                 <div className="flex items-center justify-between mb-4 shrink-0">
-                  <div className="flex items-center gap-2 text-[#2F63F6]">
+                  <div className="flex items-center gap-2 text-[#1F2937]">
                     <svg viewBox="0 0 24 24" className="w-[18px] h-[18px] fill-none stroke-current stroke-2">
                       <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                     </svg>
@@ -337,18 +452,14 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
                                 <div className="flex items-center gap-2.5 bg-white/60 rounded-xl p-2 border border-[#2F63F6]/5">
                                   <span className="text-[11px] font-bold text-[#5B6575] shrink-0">生效时段:</span>
                                   <div className="flex items-center gap-1.5 flex-1">
-                                    <input 
-                                      type="time"
+                                    <CustomTimePicker 
                                       value={(airspaceTimeRanges[a.id] || a.timeRange).split(" - ")[0]}
-                                      onChange={(e) => handleStartTimeChange(a.id, e.target.value)}
-                                      className="flex-1 bg-[#F0F4FA] border-none rounded-md px-1.5 py-0.5 text-[12px] font-bold text-[#1F2937] focus:ring-1 focus:ring-[#2F63F6]/30"
+                                      onChange={(newStart) => handleStartTimeChange(a.id, newStart)}
                                     />
                                     <span className="text-gray-300 text-[10px]">-</span>
-                                    <input 
-                                      type="time"
+                                    <CustomTimePicker 
                                       value={(airspaceTimeRanges[a.id] || a.timeRange).split(" - ")[1]}
-                                      onChange={(e) => handleEndTimeChange(a.id, e.target.value)}
-                                      className="flex-1 bg-[#F0F4FA] border-none rounded-md px-1.5 py-0.5 text-[12px] font-bold text-[#1F2937] focus:ring-1 focus:ring-[#2F63F6]/30"
+                                      onChange={(newEnd) => handleEndTimeChange(a.id, newEnd)}
                                     />
                                   </div>
                                 </div>
@@ -369,10 +480,7 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
                       <div className="w-16 h-16 bg-[#F0F4FA] rounded-full flex items-center justify-center mb-4 shadow-inner">
                         <Settings size={32} className="text-[#2F63F6] opacity-40 animate-pulse" />
                       </div>
-                      <h3 className="text-[15px] font-bold text-[#1A2238] mb-1">暂无生效空域</h3>
-                      <p className="text-[12px] text-gray-400 mb-5 leading-relaxed">
-                        当前尚未配置生效空域，请点击下方按钮或右上角设置图标进行配置。
-                      </p>
+                      <h3 className="text-[15px] font-bold text-[#1A2238] mb-5">暂无生效空域</h3>
                       <button 
                         onClick={() => setIsAirspaceSettingsOpen(true)}
                         className="px-6 py-2 bg-[#2F63F6] text-white text-[13px] font-bold rounded-xl shadow-[0_4px_12px_rgba(47,99,246,0.2)] hover:bg-[#2757DF] transition-all active:scale-95"
@@ -431,15 +539,15 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
                       </div>
                     </div>
                     <div className="w-full shrink-0 mt-3 flex gap-2">
-                      <button className="flex-1 bg-[#F0F4FA] uav-inset hover:bg-[#E4E9F2] text-[#1F2937] rounded-xl py-2.5 text-[14px] font-bold transition-colors">
+                      <Button variant="outline" className="flex-1">
                         详情
-                      </button>
-                      <button 
+                      </Button>
+                      <Button 
                         onClick={() => setExpandedView('sortie')}
-                        className="flex-1 bg-gradient-to-r from-[#608BFF] to-[#2F63F6] hover:from-[#4B7CFF] hover:to-[#2757DF] text-white rounded-xl py-2.5 text-[14px] font-bold transition-all shadow-[0_4px_12px_rgba(47,99,246,0.25)]"
+                        className="flex-1"
                       >
                         切换
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -455,15 +563,15 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
                       </div>
                     </div>
                     <div className="w-full shrink-0 mt-3 flex gap-2">
-                      <button className="flex-1 bg-[#F0F4FA] uav-inset hover:bg-[#E4E9F2] text-[#1F2937] rounded-xl py-2.5 text-[14px] font-bold transition-colors">
+                      <Button variant="outline" className="flex-1">
                         详情
-                      </button>
-                      <button 
+                      </Button>
+                      <Button 
                         onClick={() => setExpandedView('plan')}
-                        className="flex-1 bg-gradient-to-r from-[#608BFF] to-[#2F63F6] hover:from-[#4B7CFF] hover:to-[#2757DF] text-white rounded-xl py-2.5 text-[14px] font-bold transition-all shadow-[0_4px_12px_rgba(47,99,246,0.25)]"
+                        className="flex-1"
                       >
                         切换
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -476,24 +584,27 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
       {/* 悬浮面板控制按钮长条容器 */}
       {panelStates && setPanelStates && (
         <div className="workspace-card uav-glass shrink-0 flex items-center justify-between gap-3 p-3">
-          <button 
-            className={`flex-1 py-2.5 rounded-full text-[15px] font-bold transition-all ${panelStates.flightParams ? 'bg-gradient-to-br from-[#B055A4] to-[#C875BD] text-white shadow-[0_4px_12px_rgba(176,85,164,0.25)] hover:from-[#9d4b92] hover:to-[#b55da9]' : 'bg-[#F0F4FA] uav-inset text-[#5B6575] hover:bg-[#E4E9F2] hover:text-[#B055A4]'}`}
+          <Button 
+            variant={panelStates.flightParams ? 'secondary' : 'outline'}
+            className="flex-1 rounded-full"
             onClick={() => setPanelStates({...panelStates, flightParams: !panelStates.flightParams})}
           >
             飞行参数
-          </button>
-          <button 
-            className={`flex-1 py-2.5 rounded-full text-[15px] font-bold transition-all ${panelStates.opCondition ? 'bg-gradient-to-br from-[#B055A4] to-[#C875BD] text-white shadow-[0_4px_12px_rgba(176,85,164,0.25)] hover:from-[#9d4b92] hover:to-[#b55da9]' : 'bg-[#F0F4FA] uav-inset text-[#5B6575] hover:bg-[#E4E9F2] hover:text-[#B055A4]'}`}
+          </Button>
+          <Button 
+            variant={panelStates.opCondition ? 'secondary' : 'outline'}
+            className="flex-1 rounded-full"
             onClick={() => setPanelStates({...panelStates, opCondition: !panelStates.opCondition})}
           >
             作业条件
-          </button>
-          <button 
-            className={`flex-1 py-2.5 rounded-full text-[15px] font-bold transition-all ${panelStates.uavVideo ? 'bg-gradient-to-br from-[#B055A4] to-[#C875BD] text-white shadow-[0_4px_12px_rgba(176,85,164,0.25)] hover:from-[#9d4b92] hover:to-[#b55da9]' : 'bg-[#F0F4FA] uav-inset text-[#5B6575] hover:bg-[#E4E9F2] hover:text-[#B055A4]'}`}
+          </Button>
+          <Button 
+            variant={panelStates.uavVideo ? 'secondary' : 'outline'}
+            className="flex-1 rounded-full"
             onClick={() => setPanelStates({...panelStates, uavVideo: !panelStates.uavVideo})}
           >
             无人机视频
-          </button>
+          </Button>
         </div>
       )}
 
@@ -532,7 +643,7 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
                       <div className="timeline-meta text-timeline">12:32 · 下发</div>
                       <h3 className="timeline-title">下发预飞航线</h3>
                       <div className="timeline-desc text-body">
-                        V2 标准巡检路线 已下发至 UAS06399445_20260408_01。
+                        V2 标准巡检路线 已下发至 {currentSortie?.code || '未知架次'}。
                       </div>
                     </li>
 
@@ -541,7 +652,7 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
                       <div className="timeline-meta text-timeline">12:56 · 换绑</div>
                       <h3 className="timeline-title">换绑飞行方案</h3>
                       <div className="timeline-desc text-body">
-                        当前预飞航线已换绑至 飞机方案标题示例。
+                        当前预飞航线已换绑至 {currentPlan?.name || '未知方案'}。
                       </div>
                     </li>
 
@@ -550,7 +661,7 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
                       <div className="timeline-meta text-timeline">13:10 · 新增版本</div>
                       <h3 className="timeline-title">新增预飞航线版本</h3>
                       <div className="timeline-desc text-body">
-                        V4 应急绕飞航线 已生成，待确认是否设为当前生效版本。
+                        V4 应急绕飞航线 已生成，待确认是否设为当前版本。
                       </div>
                     </li>
 
@@ -601,14 +712,15 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
             <div className="route-panel">
               <div className="route-toolbar">
                 <div className="route-toolbar-left">
-                  <span>当前生效版本：</span>
-                  <span className="route-version-pill">V2 标准巡检路线</span>
-                  <span className="route-current-name">标准巡检路线</span>
+                  <span>当前版本：</span>
+                  <span className="route-version-pill">
+                    {activeRoute} {routeVersions.find(v => v.id === activeRoute)?.name}
+                  </span>
                 </div>
                 <div className="route-toolbar-actions">
                   <button 
                     className={`route-visibility-btn ${!isRouteVisible ? 'is-hidden' : ''}`}
-                    onClick={() => setIsRouteVisible(!isRouteVisible)}
+                    onClick={() => setIsRouteVisible?.(!isRouteVisible)}
                     title={isRouteVisible ? '隐藏预飞航线' : '显示预飞航线'}
                   >
                     {isRouteVisible ? (
@@ -630,53 +742,24 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
               </div>
 
               <div className="route-list" style={{ opacity: isRouteVisible ? 1 : 0.55 }}>
-                <div 
-                  className={`route-item cursor-pointer ${activeRoute === 'V3' ? 'active' : ''}`} 
-                  data-kind="route"
-                  onClick={() => setActiveRoute('V3')}
-                >
-                  <div className="route-main">
-                    <div className="route-title-row">
-                      <span className="route-version">V3</span>
-                      <span className="route-name">应急响应预案</span>
+                {routeVersions.map(v => (
+                  <div 
+                    key={v.id}
+                    className={`route-item cursor-pointer ${activeRoute === v.id ? 'active' : ''}`} 
+                    data-kind="route"
+                    onClick={() => setActiveRoute?.(v.id)}
+                  >
+                    <div className="route-main">
+                      <div className="route-title-row">
+                        <span className="route-version">{v.id}</span>
+                        <span className="route-name">{v.name}</span>
+                      </div>
+                      <div className="route-time">最后修改于：{v.time}</div>
                     </div>
-                    <div className="route-time">最后修改于：11:30</div>
+                    <Radio checked={activeRoute === v.id} onChange={() => setActiveRoute?.(v.id)} className="shrink-0" />
+                    <MoreMenu />
                   </div>
-                  <Radio checked={activeRoute === 'V3'} onChange={() => setActiveRoute('V3')} className="shrink-0" />
-                  <MoreMenu />
-                </div>
-
-                <div 
-                  className={`route-item cursor-pointer ${activeRoute === 'V2' ? 'active' : ''}`} 
-                  data-kind="route"
-                  onClick={() => setActiveRoute('V2')}
-                >
-                  <div className="route-main">
-                    <div className="route-title-row">
-                      <span className="route-version">V2</span>
-                      <span className="route-name">标准巡检路线</span>
-                    </div>
-                    <div className="route-time">最后修改于：10:00</div>
-                  </div>
-                  <Radio checked={activeRoute === 'V2'} onChange={() => setActiveRoute('V2')} className="shrink-0" />
-                  <MoreMenu />
-                </div>
-
-                <div 
-                  className={`route-item cursor-pointer ${activeRoute === 'V1' ? 'active' : ''}`} 
-                  data-kind="route"
-                  onClick={() => setActiveRoute('V1')}
-                >
-                  <div className="route-main">
-                    <div className="route-title-row">
-                      <span className="route-version">V1</span>
-                      <span className="route-name">初始地形扫描</span>
-                    </div>
-                    <div className="route-time">最后修改于：08:15</div>
-                  </div>
-                  <Radio checked={activeRoute === 'V1'} onChange={() => setActiveRoute('V1')} className="shrink-0" />
-                  <MoreMenu />
-                </div>
+                ))}
               </div>
             </div>
           </div>
@@ -698,7 +781,7 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
                   <div className="layer-item">
                     <div className="layer-item-main">
                       <span className="layer-index">01.</span>
-                      <span className="layer-name">预警产品-危险区</span>
+                      <span className="layer-name">预警产品-强对流危险区</span>
                       <span className="layer-badge">系统生成</span>
                     </div>
                     <Switch checked={activeLayers.danger1} onChange={() => setActiveLayers(prev => ({...prev, danger1: !prev.danger1}))} className="shrink-0" />
@@ -708,7 +791,8 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
                   <div className="layer-item">
                     <div className="layer-item-main">
                       <span className="layer-index">02.</span>
-                      <span className="layer-name">手动危险区-01</span>
+                      <span className="layer-name">预警产品-闪电预警区</span>
+                      <span className="layer-badge">系统生成</span>
                     </div>
                     <Switch checked={activeLayers.danger2} onChange={() => setActiveLayers(prev => ({...prev, danger2: !prev.danger2}))} className="shrink-0" />
                     <MoreMenu />
@@ -729,7 +813,7 @@ export default function WorkspaceLeft({ panelStates, setPanelStates }: Workspace
                   <div className="layer-item">
                     <div className="layer-item-main">
                       <span className="layer-index">01.</span>
-                      <span className="layer-name">预警产品-潜力区</span>
+                      <span className="layer-name">数值模式-潜力区</span>
                       <span className="layer-badge">系统生成</span>
                     </div>
                     <Switch checked={activeLayers.potential1} onChange={() => setActiveLayers(prev => ({...prev, potential1: !prev.potential1}))} className="shrink-0" />

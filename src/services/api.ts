@@ -114,13 +114,40 @@ export const api = {
     };
   },
 
+  // 获取当前架次轨迹 (GeoJSON)
+  async getSortieTrack(sortieId?: string): Promise<any> {
+    try {
+      if (sortieId !== 'UAS06399445_20260408_01') return null;
+      const response = await fetch('/data/tracks/qinghai_demo_UAS06399445_20260408_01.geojson');
+      if (!response.ok) throw new Error('Failed to fetch sortie track');
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching sortie track:', error);
+      return null;
+    }
+  },
+
+  // 获取当前方案轨迹 (GeoJSON)
+  async getPlanTrack(sortieId?: string, version?: string): Promise<any> {
+    try {
+      if (sortieId !== 'UAS06399445_20260408_01') return null;
+      if (version !== 'V1') return null; // Only show for V1 as requested
+      const response = await fetch('/data/tracks/qinghai_demo_preflight_20260408_01_v1.geojson');
+      if (!response.ok) throw new Error('Failed to fetch plan track');
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching plan track:', error);
+      return null;
+    }
+  },
+
   // 获取实况架次列表
   async getSorties(): Promise<Sortie[]> {
     await delay(300);
     return [
       { id: 's1', code: 'UAS06399445_20260408_01', status: '飞行中', time: '07:02 - 至今', planName: '青海外场试飞计划方案' },
-      { id: 's2', code: 'UAS06399445_20260408_01', status: '已完成', time: '昨日 14:00 - 16:30', planName: 'AJBGDOJrndDJ4...' },
-      { id: 's3', code: 'UAS06399445_20260408_01', status: '已计划', time: '明日 08:00', planName: '常规巡检方案 - V1' },
+      { id: 's2', code: 'UAS06399445_20260408_02', status: '已完成', time: '昨日 14:00 - 16:30', planName: 'AJBGDOJrndDJ4...' },
+      { id: 's3', code: 'UAS06399445_20260408_03', status: '已计划', time: '明日 08:00', planName: '常规巡检方案 - V1' },
     ];
   },
 
@@ -128,21 +155,22 @@ export const api = {
   async getPlans(): Promise<Plan[]> {
     await delay(300);
     return [
-      { id: 'p1', name: '青海外场试验试飞方案', version: 'V4', updateTime: '12:37', status: '当前生效' },
+      { id: 'p1', name: '青海外场试验试飞方案', version: 'V4', updateTime: '12:37', status: '当前' },
       { id: 'p2', name: '祁连山区增雨作业方案', version: 'V2', updateTime: '昨日 15:20', status: '历史方案' },
       { id: 'p3', name: '三江源生态监测方案', version: 'V1', updateTime: '03-20 09:15', status: '历史方案' },
     ];
   },
 
   // 获取告警通知
-  async getNotifications(): Promise<Notification[]> {
+  async getNotifications(sortieId?: string): Promise<Notification[]> {
     await delay(300);
+    if (sortieId !== 'UAS06399445_20260408_01') return [];
     return [
       {
         id: 'n1',
         type: 'danger',
         title: '危险区告警',
-        message: '架次 {h1} 的当前生效预飞航线与危险区 {h2} 存在交汇风险，建议立即核查并调整航线。',
+        message: '架次 {h1} 的当前预飞航线与危险区 {h2} 存在交汇风险，建议立即核查并调整航线。',
         highlight1: 'UAS06399445_20260408_01',
         highlight2: '手动危险区-01'
       },
@@ -150,14 +178,14 @@ export const api = {
         id: 'n2',
         type: 'potential',
         title: '潜力区提醒',
-        message: '架次 {h1} 的当前生效预飞航线未覆盖有效潜力区，可能无法满足本次作业目标。',
+        message: '架次 {h1} 的当前预飞航线未覆盖有效潜力区，可能无法满足本次作业目标。',
         highlight1: 'UAS06399445_20260408_01'
       },
       {
         id: 'n3',
         type: 'airspace',
         title: '空域告警',
-        message: '架次 {h1} 的当前生效预飞航线进入未批复通过空域 {h2} ，当前状态下不满足放行条件。',
+        message: '架次 {h1} 的当前预飞航线进入未批复通过空域 {h2} ，当前状态下不满足放行条件。',
         highlight1: 'UAS06399445_20260408_01',
         highlight2: '13区'
       }
@@ -165,8 +193,9 @@ export const api = {
   },
 
   // 获取飞行参数数据
-  async getFlightData(): Promise<FlightData[]> {
+  async getFlightData(sortieId?: string): Promise<FlightData[]> {
     await delay(200);
+    if (sortieId !== 'UAS06399445_20260408_01') return [];
     const data: FlightData[] = [];
     let time = new Date();
     time.setHours(7, 2, 27, 0); // 从 07:02:27 开始
@@ -214,8 +243,9 @@ export const api = {
   },
 
   // 获取作业条件数据
-  async getOperationConditionData(): Promise<OperationConditionData[]> {
+  async getOperationConditionData(sortieId?: string): Promise<OperationConditionData[]> {
     await delay(200);
+    if (sortieId !== 'UAS06399445_20260408_01') return [];
     const data: OperationConditionData[] = [];
     let time = new Date();
     time.setHours(7, 17, 9, 0);
@@ -290,8 +320,9 @@ export const api = {
   },
 
   // 获取雷达剖面数据
-  async getRadarData(): Promise<RadarData[]> {
+  async getRadarData(sortieId?: string): Promise<RadarData[]> {
     await delay(200);
+    if (sortieId !== 'UAS06399445_20260408_01') return [];
     return Array.from({ length: 100 }).map((_, i) => {
       const time = new Date(2026, 2, 21, 7, 2 + i * 2).toLocaleTimeString('zh-CN', { hour12: false });
       // 模拟高度曲线
@@ -320,8 +351,9 @@ export const api = {
   },
 
   // 获取云参数数据
-  async getCloudData(): Promise<CloudData[]> {
+  async getCloudData(sortieId?: string): Promise<CloudData[]> {
     await delay(200);
+    if (sortieId !== 'UAS06399445_20260408_01') return [];
     return Array.from({ length: 150 }).map((_, i) => {
       const time = new Date(2026, 2, 21, 14, 54 + Math.floor(i / 2), (i % 2) * 30).toLocaleTimeString('zh-CN', { hour12: false });
       return {
@@ -334,8 +366,9 @@ export const api = {
   },
 
   // 获取积冰监测数据
-  async getIcingData(): Promise<IcingData[]> {
+  async getIcingData(sortieId?: string): Promise<IcingData[]> {
     await delay(200);
+    if (sortieId !== 'UAS06399445_20260408_01') return [];
     return Array.from({ length: 150 }).map((_, i) => {
       const time = new Date(2026, 2, 21, 14, 23 + Math.floor(i * 1.5)).toLocaleTimeString('zh-CN', { hour12: false });
       
@@ -381,5 +414,73 @@ export const api = {
         severity
       };
     });
-  }
+  },
+
+  // 获取危险区战术图层 (气象预警)
+  getDangerZones: async (): Promise<any> => {
+    return {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: {
+            type: "convection",
+            name: "强对流危险区-01",
+            level: "high",
+            icon: "cloud-lightning"
+          },
+          geometry: {
+            type: "Polygon",
+            coordinates: [[
+              [100.1, 36.8], [100.2, 36.78], [100.25, 36.7], [100.28, 36.65], [100.22, 36.55], 
+              [100.15, 36.48], [100.0, 36.42], [99.85, 36.48], [99.78, 36.55], [99.75, 36.65], 
+              [99.8, 36.72], [99.9, 36.78], [100.0, 36.82], [100.1, 36.8]
+            ]]
+          }
+        },
+        {
+          type: "Feature",
+          properties: {
+            type: "lightning",
+            name: "闪电预警区-02",
+            level: "medium",
+            icon: "zap"
+          },
+          geometry: {
+            type: "Polygon",
+            coordinates: [[
+              [100.7, 36.45], [100.8, 36.42], [100.88, 36.35], [100.92, 36.28], [100.9, 36.2], 
+              [100.85, 36.12], [100.75, 36.08], [100.65, 36.08], [100.55, 36.12], [100.5, 36.2], 
+              [100.48, 36.28], [100.52, 36.35], [100.6, 36.42], [100.7, 36.45]
+            ]]
+          }
+        }
+      ]
+    };
+  },
+
+  // 获取作业潜力区战术图层 (数值模式)
+  getPotentialZones: async (): Promise<any> => {
+    return {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: {
+            rating: "excellent", // 优
+            name: "作业潜力区-01",
+            color: "#10B981" // emerald-500
+          },
+          geometry: {
+            type: "Polygon",
+            coordinates: [[
+              [101.3, 37.2], [101.5, 37.15], [101.65, 37.05], [101.75, 36.95], [101.7, 36.85], 
+              [101.6, 36.75], [101.45, 36.68], [101.3, 36.62], [101.15, 36.65], [101.0, 36.72], 
+              [100.9, 36.85], [100.88, 36.95], [100.95, 37.05], [101.1, 37.15], [101.3, 37.2]
+            ]]
+          }
+        }
+      ]
+    };
+  },
 };

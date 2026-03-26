@@ -58,7 +58,7 @@ const ChartRow = ({ dataKey, name, data, yDomain, chartType, lineStroke = "#EF44
   </div>
 );
 
-export default function IcingMonitorTab() {
+export default function IcingMonitorTab({ currentSortie }: { currentSortie?: any }) {
   const [activeSubTab, setActiveSubTab] = useState('积冰监测');
   const [chartType, setChartType] = useState<'line' | 'scatter'>('scatter');
   const [data, setData] = useState<IcingData[]>([]);
@@ -67,7 +67,8 @@ export default function IcingMonitorTab() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const icingData = await api.getIcingData();
+        setIsLoading(true);
+        const icingData = await api.getIcingData(currentSortie?.code);
         setData(icingData);
       } catch (error) {
         console.error("Failed to fetch icing data", error);
@@ -76,7 +77,7 @@ export default function IcingMonitorTab() {
       }
     };
     fetchData();
-  }, []);
+  }, [currentSortie]);
 
   return (
     <div className="flex-1 w-full h-full flex flex-col bg-white min-h-0 relative">
