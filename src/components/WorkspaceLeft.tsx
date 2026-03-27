@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Plane, Route, MoreVertical, Settings, ChevronLeft, X, Check } from 'lucide-react';
 import './WorkspaceLeft.css';
 import { Radio, Switch } from './ui/SelectionControls';
@@ -7,16 +8,28 @@ import { api, Airspace, Sortie, Plan } from '../services/api';
 
 function CustomTimePicker({ value, onChange }: { value: string, onChange: (val: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
+  const triggerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        triggerRef.current && !triggerRef.current.contains(event.target as Node) &&
+        dropdownRef.current && !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      if (triggerRef.current) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        setCoords({
+          top: rect.bottom + 4,
+          left: rect.left + rect.width / 2
+        });
+      }
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
@@ -27,16 +40,20 @@ function CustomTimePicker({ value, onChange }: { value: string, onChange: (val: 
   const minutes = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
   return (
-    <div className="relative flex-1" ref={dropdownRef}>
+    <div className="relative flex-1" ref={triggerRef}>
       <div 
         className="bg-[#F0F4FA] rounded-md px-2 py-1 text-[12px] font-bold text-[#1F2937] cursor-pointer text-center hover:bg-[#E4E9F2] transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
         {value}
       </div>
-      {isOpen && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 bg-white border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.1)] rounded-xl p-2 z-[1003] flex gap-2 w-[120px]">
-          <div className="flex-1 h-[120px] overflow-y-auto custom-scrollbar pr-1">
+      {isOpen && createPortal(
+        <div 
+          ref={dropdownRef}
+          className="time-picker-dropdown fixed bg-white border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.1)] rounded-xl p-2 z-[9999] flex gap-2 w-[120px]"
+          style={{ top: coords.top, left: coords.left, transform: 'translateX(-50%)' }}
+        >
+          <div className="flex-1 h-[200px] overflow-y-auto custom-scrollbar pr-1">
             {hours.map(h => (
               <div 
                 key={h}
@@ -50,7 +67,7 @@ function CustomTimePicker({ value, onChange }: { value: string, onChange: (val: 
             ))}
           </div>
           <div className="w-[1px] bg-gray-100 shrink-0"></div>
-          <div className="flex-1 h-[120px] overflow-y-auto custom-scrollbar pr-1">
+          <div className="flex-1 h-[200px] overflow-y-auto custom-scrollbar pr-1">
             {minutes.map(m => (
               <div 
                 key={m}
@@ -64,7 +81,8 @@ function CustomTimePicker({ value, onChange }: { value: string, onChange: (val: 
               </div>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
@@ -218,7 +236,11 @@ export default function WorkspaceLeft({
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (airspaceSettingsRef.current && !airspaceSettingsRef.current.contains(event.target as Node)) {
+      if (
+        airspaceSettingsRef.current && 
+        !airspaceSettingsRef.current.contains(event.target as Node) &&
+        !(event.target as Element).closest('.time-picker-dropdown')
+      ) {
         setIsAirspaceSettingsOpen(false);
       }
     }
@@ -415,11 +437,10 @@ export default function WorkspaceLeft({
                       <Settings size={16} />
                     </button>
                     {isAirspaceSettingsOpen && (
-                      <div className="absolute left-0 top-full mt-2 w-[320px] bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-100 p-5 z-[1002] max-h-[420px] overflow-y-auto custom-scrollbar">
+                      <div className="absolute left-0 top-full mt-2 w-[320px] bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-100 p-5 z-[1002] max-h-[600px] overflow-y-auto custom-scrollbar">
                         <div className="flex items-center justify-between mb-5">
                           <div className="flex flex-col">
                             <div className="text-[15px] font-bold text-[#1A2238]">生效空域设置</div>
-                            <div className="text-[11px] text-gray-400 mt-0.5">从 26 个备选区域中选择</div>
                           </div>
                           <button 
                             onClick={() => setIsAirspaceSettingsOpen(false)}
@@ -432,13 +453,13 @@ export default function WorkspaceLeft({
                           {allAvailableAirspaces.map(a => (
                             <div 
                               key={a.id} 
-                              className={`flex flex-col gap-2.5 p-3.5 rounded-2xl border transition-all ${selectedAirspaceIds.includes(a.id) ? 'bg-[#F5F8FF] border-[#2F63F6]/20 shadow-sm' : 'bg-[#F9FAFB] border-gray-100 hover:border-gray-200'}`}
+                              className={`flex flex-col gap-2.5 p-3.5 rounded-2xl border transition-all cursor-pointer ${selectedAirspaceIds.includes(a.id) ? 'bg-[#F5F8FF] border-[#2F63F6]/20 shadow-sm' : 'bg-[#F9FAFB] border-gray-100 hover:border-gray-200'}`}
+                              onClick={() => handleAirspaceToggle(a.id)}
                             >
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                   <div 
-                                    className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all cursor-pointer ${selectedAirspaceIds.includes(a.id) ? 'bg-[#2F63F6] border-[#2F63F6]' : 'bg-white border-gray-300 hover:border-[#2F63F6]'}`}
-                                    onClick={() => handleAirspaceToggle(a.id)}
+                                    className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${selectedAirspaceIds.includes(a.id) ? 'bg-[#2F63F6] border-[#2F63F6]' : 'bg-white border-gray-300'}`}
                                   >
                                     {selectedAirspaceIds.includes(a.id) && <Check size={14} className="text-white" strokeWidth={3} />}
                                   </div>
@@ -449,7 +470,10 @@ export default function WorkspaceLeft({
                                 )}
                               </div>
                               {selectedAirspaceIds.includes(a.id) && (
-                                <div className="flex items-center gap-2.5 bg-white/60 rounded-xl p-2 border border-[#2F63F6]/5">
+                                <div 
+                                  className="flex items-center gap-2.5 bg-white/60 rounded-xl p-2 border border-[#2F63F6]/5"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                   <span className="text-[11px] font-bold text-[#5B6575] shrink-0">生效时段:</span>
                                   <div className="flex items-center gap-1.5 flex-1">
                                     <CustomTimePicker 

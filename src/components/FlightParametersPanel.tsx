@@ -24,7 +24,7 @@ const metrics = [
   { key: 'heading', name: '航向', color: '#1D4ED8', unit: '°', orientation: 'left', domain: [0, 360] },
 ];
 
-export default function FlightParametersPanel({ onClose, currentSortie, isVisible = true }: { onClose?: () => void, currentSortie?: any, isVisible?: boolean }) {
+export default function FlightParametersPanel({ onClose, currentSortie, isVisible = true, isMapFullscreen = false }: { onClose?: () => void, currentSortie?: any, isVisible?: boolean, isMapFullscreen?: boolean }) {
   const [activeTab, setActiveTab] = useState('飞行参数');
   const [data, setData] = useState<FlightData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -82,13 +82,14 @@ export default function FlightParametersPanel({ onClose, currentSortie, isVisibl
 
   return (
     <DraggablePanel
+      id="flight-parameters"
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={setActiveTab}
       onClose={onClose}
       isVisible={isVisible}
-      defaultPosition={{ x: 1100, y: 20 }}
-      defaultSize={{ width: 700, height: 450 }}
+      defaultPosition={{ x: isMapFullscreen ? 767 + 500 : 767, y: 52 }}
+      defaultSize={{ width: 648, height: 449 }}
       minWidth={400}
       minHeight={300}
     >

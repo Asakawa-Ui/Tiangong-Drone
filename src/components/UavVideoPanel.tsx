@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Video, Maximize, Minimize, Camera } from 'lucide-react';
 import DraggablePanel from './DraggablePanel';
 
-export default function UavVideoPanel({ onClose, currentSortie, isVisible = true }: { onClose: () => void, currentSortie?: any, isVisible?: boolean }) {
+export default function UavVideoPanel({ onClose, currentSortie, isVisible = true, isMapFullscreen = false }: { onClose: () => void, currentSortie?: any, isVisible?: boolean, isMapFullscreen?: boolean }) {
   const [stream, setStream] = useState('光电吊舱');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const videoContainerRef = useRef<HTMLDivElement>(null);
@@ -39,6 +39,7 @@ export default function UavVideoPanel({ onClose, currentSortie, isVisible = true
 
   return (
     <DraggablePanel
+      id="uav-video"
       title={
         <>
           <Video size={18} className="text-blue-600" />
@@ -47,8 +48,8 @@ export default function UavVideoPanel({ onClose, currentSortie, isVisible = true
       }
       onClose={onClose}
       isVisible={isVisible}
-      defaultPosition={{ x: 1100, y: 480 }}
-      defaultSize={{ width: 700, height: 450 }}
+      defaultPosition={{ x: isMapFullscreen ? 767 + 500 : 767, y: 509 }}
+      defaultSize={{ width: 646, height: 415 }}
       minWidth={500}
       minHeight={350}
     >

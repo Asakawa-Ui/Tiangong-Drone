@@ -46,10 +46,10 @@ export default function App() {
     <div className="flex flex-col w-screen h-screen overflow-hidden bg-white font-sans text-[#333333]">
       <TopNav />
       <div className="flex flex-1 overflow-hidden relative">
-        {!isMapFullscreen && <LeftNav selectedIndex={leftNavIndex} setSelectedIndex={setLeftNavIndex} />}
+        <LeftNav selectedIndex={leftNavIndex} setSelectedIndex={setLeftNavIndex} />
         
         {/* Main Content Area Background */}
-        <div className={`flex flex-col flex-1 overflow-hidden bg-[#F8FAFF] ${isMapFullscreen ? 'p-0' : 'p-[12px]'}`}>
+        <div className="flex flex-col flex-1 overflow-hidden bg-[#F8FAFF] p-[12px]">
           
           {leftNavIndex === 4 ? (
             <TabContainer
@@ -77,7 +77,7 @@ export default function App() {
                       {/* 左侧容器框 */}
                       <div className={
                         isMapFullscreen
-                          ? "fixed top-[90px] left-[20px] bottom-[20px] z-[60] flex flex-col gap-[12px]"
+                          ? "fixed top-[20px] left-[20px] bottom-[20px] z-[60] flex flex-col gap-[12px]"
                           : "h-full shrink-0 flex flex-col gap-[12px]"
                       }>
                         <WorkspaceLeft 
@@ -98,7 +98,7 @@ export default function App() {
                       {/* 右侧容器框：放地图 */}
                       <div className={
                         isMapFullscreen
-                          ? "fixed top-[70px] inset-x-0 bottom-0 z-50 bg-[#F8FAFF]"
+                          ? "fixed inset-0 z-50 bg-[#F8FAFF]"
                           : "flex-1 h-full relative border border-[#C1D6FF] rounded-[5px] overflow-hidden"
                       }>
                         <MapArea 
@@ -134,6 +134,22 @@ export default function App() {
 
         </div>
       </div>
+
+      {/* 开发者工具：复制布局 */}
+      <button
+        onClick={() => {
+          const layouts = (window as any).panelLayouts;
+          if (layouts) {
+            navigator.clipboard.writeText(JSON.stringify(layouts, null, 2));
+            alert('布局已复制到剪贴板！\n' + JSON.stringify(layouts, null, 2));
+          } else {
+            alert('尚未记录任何布局信息，请先拖拽或缩放面板。');
+          }
+        }}
+        className="fixed bottom-4 right-4 z-[9999] bg-black text-white px-4 py-2 rounded shadow-lg text-sm opacity-50 hover:opacity-100 transition-opacity"
+      >
+        复制当前布局
+      </button>
     </div>
   );
 }

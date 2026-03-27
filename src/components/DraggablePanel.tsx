@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Rnd } from 'react-rnd';
 import { X } from 'lucide-react';
 
@@ -9,6 +9,9 @@ export const getNextZIndex = () => {
   return globalZIndex;
 };
 
+// Global object to store current layouts for dev purposes
+(window as any).panelLayouts = (window as any).panelLayouts || {};
+
 export interface Tab {
   id: string;
   label: string;
@@ -16,6 +19,7 @@ export interface Tab {
 }
 
 interface DraggablePanelProps {
+  id?: string;
   title?: React.ReactNode;
   tabs?: Tab[];
   activeTab?: string;
@@ -30,6 +34,7 @@ interface DraggablePanelProps {
 }
 
 export default function DraggablePanel({
+  id,
   title,
   tabs,
   activeTab,
@@ -48,6 +53,31 @@ export default function DraggablePanel({
     setZIndex(getNextZIndex());
   };
 
+  const handleDragStop = (e: any, d: any) => {
+    if (id) {
+      (window as any).panelLayouts[id] = {
+        ...((window as any).panelLayouts[id] || {}),
+        position: { x: d.x, y: d.y }
+      };
+    }
+  };
+
+  const handleResizeStop = (e: any, direction: any, ref: any, delta: any, position: any) => {
+    if (id) {
+      (window as any).panelLayouts[id] = {
+        ...((window as any).panelLayouts[id] || {}),
+        size: { width: ref.style.width, height: ref.style.height },
+        position: { x: position.x, y: position.y }
+      };
+    }
+  };
+
+  useEffect(() => {
+    if (id && !(window as any).panelLayouts[id]) {
+      (window as any).panelLayouts[id] = { position: defaultPosition, size: defaultSize };
+    }
+  }, [id, defaultPosition, defaultSize]);
+
   return (
     <Rnd
       default={{ ...defaultPosition, ...defaultSize }}
@@ -55,9 +85,11 @@ export default function DraggablePanel({
       minHeight={minHeight}
       bounds="parent"
       dragHandleClassName="drag-handle"
-      className={`absolute ${isVisible ? 'block' : 'hidden'}`}
-      style={{ zIndex }}
+      className="absolute"
+      style={{ zIndex, display: isVisible ? undefined : 'none' }}
       onDragStart={bringToFront}
+      onDragStop={handleDragStop}
+      onResizeStop={handleResizeStop}
     >
       <div 
         className="w-full h-full bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col overflow-hidden"

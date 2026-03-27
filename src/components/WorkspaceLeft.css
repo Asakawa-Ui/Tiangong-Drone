@@ -565,8 +565,7 @@
   flex: 0 0 auto;
 }
 
-.route-visibility-btn,
-.route-create-btn {
+.route-visibility-btn {
   width: 40px;
   height: 40px;
   min-width: 40px;
@@ -582,9 +581,26 @@
 }
 
 .route-create-btn {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #608BFF 0%, var(--color-primary, #2F63F6) 100%);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(47, 99, 246, 0.25);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 24px;
   font-weight: 500;
   line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.route-create-btn:hover {
+  background: linear-gradient(180deg, #4B7CFF 0%, #2757DF 100%);
 }
 
 .route-visibility-btn svg {

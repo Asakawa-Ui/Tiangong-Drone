@@ -20,7 +20,7 @@ const CustomDot = (props: any) => {
   return <circle cx={cx} cy={cy} r={2.5} fill={fill} />;
 };
 
-export default function OperationConditionPanel({ onClose, currentSortie, isVisible = true }: { onClose: () => void, currentSortie?: any, isVisible?: boolean }) {
+export default function OperationConditionPanel({ onClose, currentSortie, isVisible = true, isMapFullscreen = false }: { onClose: () => void, currentSortie?: any, isVisible?: boolean, isMapFullscreen?: boolean }) {
   const [timeFilter, setTimeFilter] = useState('全部');
   const [data, setData] = useState<OperationConditionData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,6 +43,7 @@ export default function OperationConditionPanel({ onClose, currentSortie, isVisi
 
   return (
     <DraggablePanel
+      id="operation-condition"
       title={
         <>
           <ClipboardCheck size={18} className="text-blue-600" />
@@ -51,8 +52,8 @@ export default function OperationConditionPanel({ onClose, currentSortie, isVisi
       }
       onClose={onClose}
       isVisible={isVisible}
-      defaultPosition={{ x: 480, y: 80 }}
-      defaultSize={{ width: 600, height: 500 }}
+      defaultPosition={{ x: isMapFullscreen ? 260 + 500 : 260, y: 48 }}
+      defaultSize={{ width: 500, height: 544 }}
     >
       <div className="flex-1 flex flex-col min-h-0 bg-white relative">
         {isLoading ? (
