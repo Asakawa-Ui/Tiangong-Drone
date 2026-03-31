@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Video, Maximize, Minimize, Camera } from 'lucide-react';
+import { Video, Maximize, Minimize, Camera, WifiOff, Loader2 } from 'lucide-react';
 import DraggablePanel from './DraggablePanel';
 
 export default function UavVideoPanel({ onClose, currentSortie, isVisible = true, isMapFullscreen = false }: { onClose: () => void, currentSortie?: any, isVisible?: boolean, isMapFullscreen?: boolean }) {
   const [stream, setStream] = useState('光电吊舱');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'success' | 'error'>('connecting');
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
   const toggleFullscreen = () => {
@@ -24,6 +25,39 @@ export default function UavVideoPanel({ onClose, currentSortie, isVisible = true
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
+
+  useEffect(() => {
+    setConnectionStatus('connecting');
+    let isMounted = true;
+
+    const checkConnection = async () => {
+      try {
+        // Use no-cors to avoid CORS issues, we just want to know if the server is reachable
+        await fetch('http://127.0.0.1:8889/podstream', { mode: 'no-cors', cache: 'no-store' });
+        if (isMounted) {
+          setConnectionStatus('success');
+        }
+      } catch (error) {
+        if (isMounted) {
+          setConnectionStatus('error');
+        }
+      }
+    };
+
+    // Initial check after a small delay to show "connecting" state
+    const initialTimeout = setTimeout(() => {
+      checkConnection();
+    }, 500);
+
+    // Polling every 3 seconds to update status dynamically
+    const interval = setInterval(checkConnection, 3000);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(initialTimeout);
+      clearInterval(interval);
+    };
+  }, [stream]);
 
   const parameters = [
     { label: '经度', value: '116.39°E' },
@@ -77,27 +111,32 @@ export default function UavVideoPanel({ onClose, currentSortie, isVisible = true
           ref={videoContainerRef}
           className="relative flex-1 w-full min-h-0 bg-black overflow-hidden flex flex-col"
         >
-          {/* Placeholder Image with CSS Pan Animation to simulate video */}
-          <style>
-            {`
-              @keyframes panImage {
-                0% { object-position: 0% 50%; transform: scale(1.1); }
-                50% { object-position: 100% 50%; transform: scale(1.1); }
-                100% { object-position: 0% 50%; transform: scale(1.1); }
-              }
-              .animate-pan-image {
-                animation: panImage 40s ease-in-out infinite;
-              }
-            `}
-          </style>
-          <img 
-            src="https://images.unsplash.com/photo-1513002749550-c59d786b8e6c?auto=format&fit=crop&q=80&w=1200&h=800" 
-            alt="UAV Stream Placeholder"
-            className="absolute inset-0 w-full h-full object-cover opacity-80 animate-pan-image"
-          />
+          {/* Live Video Stream Iframe */}
+          {connectionStatus === 'success' ? (
+            <iframe 
+              src="http://127.0.0.1:8889/podstream" 
+              className="absolute inset-0 w-full h-full z-[1] pointer-events-none border-0"
+              allowFullScreen
+              scrolling="no"
+            />
+          ) : (
+            <div className="absolute inset-0 w-full h-full z-[1] bg-gray-900 flex flex-col items-center justify-center text-gray-500">
+              {connectionStatus === 'connecting' ? (
+                <>
+                  <Loader2 size={48} className="mb-4 opacity-50 animate-spin" />
+                  <p>正在建立视频连接...</p>
+                </>
+              ) : (
+                <>
+                  <WifiOff size={48} className="mb-4 opacity-50" />
+                  <p>视频流信号丢失或未连接</p>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Crosshair Overlay */}
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-30">
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-30 z-10">
             <div className="w-32 h-32 border-2 border-white rounded-full relative">
               <div className="absolute top-1/2 left-[-10px] right-[-10px] h-[1px] bg-white"></div>
               <div className="absolute left-1/2 top-[-10px] bottom-[-10px] w-[1px] bg-white"></div>
@@ -105,9 +144,25 @@ export default function UavVideoPanel({ onClose, currentSortie, isVisible = true
           </div>
 
           {/* Live Badge */}
-          <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/50 px-2 py-1 rounded text-xs font-bold text-white backdrop-blur-sm">
-            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-            LIVE - {stream}
+          <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/50 px-2 py-1 rounded text-xs font-bold text-white backdrop-blur-sm z-10">
+            {connectionStatus === 'connecting' && (
+              <>
+                <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></div>
+                连接中...
+              </>
+            )}
+            {connectionStatus === 'success' && (
+              <>
+                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                LIVE - {stream}
+              </>
+            )}
+            {connectionStatus === 'error' && (
+              <>
+                <div className="w-2 h-2 rounded-full bg-gray-500"></div>
+                连接失败
+              </>
+            )}
           </div>
 
           {/* Fullscreen Toggle */}
@@ -120,7 +175,7 @@ export default function UavVideoPanel({ onClose, currentSortie, isVisible = true
           </button>
 
           {/* Parameters Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent pt-12 pb-4 px-4">
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent pt-12 pb-4 px-4 z-10">
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-y-3 gap-x-4 text-xs">
               {parameters.map((param, idx) => (
                 <div key={idx} className="flex flex-col gap-0.5">

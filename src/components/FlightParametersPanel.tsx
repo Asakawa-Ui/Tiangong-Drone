@@ -96,7 +96,7 @@ export default function FlightParametersPanel({ onClose, currentSortie, isVisibl
         {activeTab === '飞行参数' && (
           <>
             {/* 控制栏 (复选框 + 图例结合) */}
-            <div className="flex flex-wrap items-center gap-6 px-4 py-3 bg-gray-50/50 border-b border-gray-200 shrink-0">
+            <div className="flex flex-wrap items-center gap-6 px-4 py-3 bg-white/40 border-b border-gray-200/50 shrink-0">
               {metrics.map(metric => (
                 <div
                   key={metric.key}

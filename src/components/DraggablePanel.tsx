@@ -92,11 +92,11 @@ export default function DraggablePanel({
       onResizeStop={handleResizeStop}
     >
       <div 
-        className="w-full h-full bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col overflow-hidden"
+        className="w-full h-full uav-glass rounded-lg shadow-2xl flex flex-col overflow-hidden"
         onMouseDownCapture={bringToFront}
       >
         {/* 顶部标签栏 (Primary Tabs or Title) */}
-        <div className="drag-handle h-10 flex items-center justify-between px-4 border-b border-gray-200 cursor-move bg-gray-50/50 shrink-0">
+        <div className="drag-handle h-10 flex items-center justify-between px-4 border-b border-gray-200/50 cursor-move bg-white/40 shrink-0">
           <div className="flex items-center h-full">
             {tabs && tabs.length > 0 ? (
               <div className="flex gap-6 h-full">
@@ -132,7 +132,7 @@ export default function DraggablePanel({
         </div>
 
         {/* 内容区域 */}
-        <div className="flex-1 min-h-0 flex flex-col bg-white">
+        <div className="flex-1 min-h-0 flex flex-col bg-white/60">
           {children}
         </div>
       </div>

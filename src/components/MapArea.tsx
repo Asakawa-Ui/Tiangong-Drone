@@ -92,7 +92,7 @@ export default function MapArea({ isFullscreen, onToggleFullscreen, panelStates,
       {onToggleFullscreen && (
         <button
           onClick={onToggleFullscreen}
-          className="absolute top-4 right-[200px] z-[1000] bg-white p-2 rounded shadow-md text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors border border-gray-200"
+          className="absolute top-4 right-[200px] z-[1000] uav-glass p-2 rounded-xl text-gray-700 hover:text-blue-600 transition-colors"
           title={isFullscreen ? "退出全屏" : "全屏地图"}
         >
           {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
@@ -100,27 +100,24 @@ export default function MapArea({ isFullscreen, onToggleFullscreen, panelStates,
       )}
 
       <FlightParametersPanel 
-        key={`flight-params-${isFullscreen}`}
         isVisible={panelStates?.flightParams} 
         isMapFullscreen={isFullscreen}
         onClose={() => setPanelStates?.(prev => ({ ...prev, flightParams: false }))} 
         currentSortie={currentSortie} 
       />
       <OperationConditionPanel 
-        key={`op-condition-${isFullscreen}`}
         isVisible={panelStates?.opCondition} 
         isMapFullscreen={isFullscreen}
         onClose={() => setPanelStates?.(prev => ({ ...prev, opCondition: false }))} 
         currentSortie={currentSortie} 
       />
       <UavVideoPanel 
-        key={`uav-video-${isFullscreen}`}
         isVisible={panelStates?.uavVideo} 
         isMapFullscreen={isFullscreen}
         onClose={() => setPanelStates?.(prev => ({ ...prev, uavVideo: false }))} 
         currentSortie={currentSortie} 
       />
-      <MapChatDock />
+      <MapChatDock isFullscreen={isFullscreen} />
       <MapContainer
         center={[36.5, 100.3]}
         zoom={8}

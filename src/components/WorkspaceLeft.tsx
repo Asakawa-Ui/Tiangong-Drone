@@ -50,7 +50,7 @@ function CustomTimePicker({ value, onChange }: { value: string, onChange: (val: 
       {isOpen && createPortal(
         <div 
           ref={dropdownRef}
-          className="time-picker-dropdown fixed bg-white border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.1)] rounded-xl p-2 z-[9999] flex gap-2 w-[120px]"
+          className="time-picker-dropdown fixed uav-glass rounded-xl p-2 z-[9999] flex gap-2 w-[120px]"
           style={{ top: coords.top, left: coords.left, transform: 'translateX(-50%)' }}
         >
           <div className="flex-1 h-[200px] overflow-y-auto custom-scrollbar pr-1">
@@ -116,9 +116,9 @@ function MoreMenu() {
         <MoreVertical size={18} />
       </button>
       {isOpen && (
-        <div className="absolute right-0 top-full mt-1 w-24 bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-gray-100 p-1.5 z-50 flex flex-col gap-1">
-          <button className="px-3 py-2 text-[13px] text-[#4b5563] hover:bg-gray-50 rounded-xl text-center font-bold transition-colors">编辑</button>
-          <button className="px-3 py-2 text-[13px] text-[#e14d39] hover:bg-red-50 rounded-xl text-center font-bold transition-colors">删除</button>
+        <div className="absolute right-0 top-full mt-1 w-24 uav-glass rounded-2xl p-1.5 z-50 flex flex-col gap-1">
+          <button className="px-3 py-2 text-[13px] text-[#4b5563] hover:bg-white/50 rounded-xl text-center font-bold transition-colors">编辑</button>
+          <button className="px-3 py-2 text-[13px] text-[#e14d39] hover:bg-red-50/50 rounded-xl text-center font-bold transition-colors">删除</button>
         </div>
       )}
     </div>
@@ -437,7 +437,7 @@ export default function WorkspaceLeft({
                       <Settings size={16} />
                     </button>
                     {isAirspaceSettingsOpen && (
-                      <div className="absolute left-0 top-full mt-2 w-[320px] bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-100 p-5 z-[1002] max-h-[600px] overflow-y-auto custom-scrollbar">
+                      <div className="absolute left-0 top-full mt-2 w-[320px] uav-glass rounded-2xl p-5 z-[1002] max-h-[600px] overflow-y-auto custom-scrollbar">
                         <div className="flex items-center justify-between mb-5">
                           <div className="flex flex-col">
                             <div className="text-[15px] font-bold text-[#1A2238]">生效空域设置</div>

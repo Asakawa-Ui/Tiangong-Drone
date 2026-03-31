@@ -11,7 +11,7 @@ const chatHistory = [
   { id: 7, time: '14:42', sender: 'operator', senderName: '西北区域人影指挥中心', text: '请评估新的潜力区轮廓是否需要纳入本轮下发指令。' },
 ];
 
-export default function MapChatDock() {
+export default function MapChatDock({ isFullscreen }: { isFullscreen?: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const [inputText, setInputText] = useState('');
   const inputRef = useRef<HTMLDivElement>(null);
@@ -24,7 +24,7 @@ export default function MapChatDock() {
 
   return (
     <div 
-      className={`absolute bottom-6 left-1/2 -translate-x-1/2 w-1/2 rounded-[28px] p-[18px_18px_16px] transition-all duration-300 z-[9999] ${
+      className={`absolute bottom-6 left-1/2 -translate-x-1/2 ${isFullscreen ? 'w-1/3' : 'w-1/2'} rounded-[28px] p-[18px_18px_16px] transition-all duration-300 z-[9999] ${
         expanded ? 'uav-glass-active' : 'uav-glass'
       }`}
     >
