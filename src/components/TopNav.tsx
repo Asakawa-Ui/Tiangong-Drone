@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Home, User, Send, Layers, MessageSquare, Settings, Link as LinkIcon, HelpCircle } from 'lucide-react';
-import logo from '../assets/images/uav_logo_flat_transparent.png';
 
 const navItems = [
   { name: '首页', icon: Home },
@@ -26,7 +25,7 @@ export default function TopNav() {
       <div className="flex items-center gap-2">
         <div className="h-14 flex items-center justify-center text-white font-black text-xs">
           <img 
-            src={logo} 
+            src="/uav_logo.png" 
             alt="logo" 
             className="h-full w-auto object-contain" 
             onError={(e) => {
