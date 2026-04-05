@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, GeoJSON, Marker, Popup, ImageOverlay } from 'r
 import { Maximize, Minimize, CloudLightning, Zap, Plane, X } from 'lucide-react';
 import L, { LatLngBoundsExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import radarImg from '../assets/radar_ref.png';
 import { renderToStaticMarkup } from 'react-dom/server';
 import GISFunctionShortcuts from './GISFunctionShortcuts';
 import FlightParametersPanel from './FlightParametersPanel';
@@ -297,7 +298,7 @@ export default function MapArea({
         {/* 雷达反射率图层 */}
         {showRadar && (
           <ImageOverlay
-            url={`${import.meta.env.BASE_URL || '/'}radar_ref.png`.replace(/\/+/g, '/')}
+            url={radarImg}
             bounds={RADAR_BOUNDS}
             opacity={0.7}
             zIndex={1000}
