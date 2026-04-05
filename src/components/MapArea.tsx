@@ -297,10 +297,10 @@ export default function MapArea({
         {/* 雷达反射率图层 */}
         {showRadar && (
           <ImageOverlay
-            url="/radar_ref.png"
+            url={`${import.meta.env.BASE_URL || '/'}radar_ref.png`.replace(/\/+/g, '/')}
             bounds={RADAR_BOUNDS}
             opacity={0.7}
-            zIndex={400}
+            zIndex={1000}
           />
         )}
         

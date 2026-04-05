@@ -14,6 +14,9 @@ const navItems = [
 
 export default function TopNav() {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const logoSrc = `${baseUrl}assets/images/uav_logo_flat_transparent.png`.replace(/\/+/g, '/');
+  const fallbackLogo = `${baseUrl}logo.png`.replace(/\/+/g, '/');
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -24,11 +27,20 @@ export default function TopNav() {
     <div className="h-[70px] w-full bg-[#5487E4] flex items-center justify-between px-6 text-white shrink-0 shadow-sm z-20 relative">
       <div className="flex items-center gap-2">
         <div className="h-14 flex items-center justify-center text-white font-black text-xs">
-          <img src="/assets/images/uav_logo_flat_transparent.png" alt="logo" className="h-full w-auto object-contain" onError={(e) => {
-            // Fallback if logo is not found
-            (e.target as HTMLImageElement).style.display = 'none';
-            (e.target as HTMLImageElement).parentElement!.innerText = 'WMC';
-          }} />
+          <img 
+            src={logoSrc} 
+            alt="logo" 
+            className="h-full w-auto object-contain" 
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (target.src !== fallbackLogo) {
+                target.src = fallbackLogo;
+              } else {
+                target.style.display = 'none';
+                if (target.parentElement) target.parentElement.innerText = 'WMC';
+              }
+            }} 
+          />
         </div>
         <span className="text-[22px] font-bold tracking-wide" style={{ fontFamily: 'PingFang SC, sans-serif' }}>天工-无人机版</span>
       </div>
