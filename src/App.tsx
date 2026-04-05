@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Toaster } from 'sonner';
 import TopNav from './components/TopNav';
 import LeftNav from './components/LeftNav';
 import MapArea from './components/MapArea';
@@ -44,6 +45,7 @@ export default function App() {
 
   return (
     <div className="flex flex-col w-screen h-screen overflow-hidden bg-white font-sans text-[#333333]">
+      <Toaster position="top-center" />
       <TopNav />
       <div className="flex flex-1 overflow-hidden relative">
         <LeftNav selectedIndex={leftNavIndex} setSelectedIndex={setLeftNavIndex} />

@@ -46,6 +46,7 @@ export interface OperationConditionData {
   index: number;
   cloudConcentration: number;
   isCloudy: boolean;
+  cloudStatus: string;
   cloudColor: string;
   temp: number;
   conditionLevel: string;
@@ -254,10 +255,10 @@ export const api = {
       const timeStr = time.toLocaleTimeString('zh-CN', { hour12: false });
       
       // 模拟入云情况 (云滴浓度)
-      let cloudConcentration = 0;
+      let cloudConcentration = Math.random() * 0.8; // 未入云，浓度低
       let isCloudy = false;
       if ((i > 30 && i < 50) || (i > 80 && i < 100) || (i > 120 && i < 130)) {
-        cloudConcentration = Math.random() * 80 + 10;
+        cloudConcentration = Math.random() * 4 + 1; // 已入云，浓度 1-5
         isCloudy = true;
       }
 
@@ -267,6 +268,22 @@ export const api = {
         temp = -5 + Math.random() * 2; // 平飞阶段温度
       } else if (i >= 140) {
         temp = -5 + ((i - 140) / 10) * 25; // 下降阶段温度
+      }
+
+      // 确定入云状态和颜色
+      let cloudStatus = '未入云';
+      let cloudColor = '#9CA3AF'; // gray
+      if (isCloudy) {
+        if (temp > 0) {
+          cloudStatus = '水云';
+          cloudColor = '#22C55E'; // green
+        } else if (temp > -15) {
+          cloudStatus = '混合云';
+          cloudColor = '#3B82F6'; // blue
+        } else {
+          cloudStatus = '冰云';
+          cloudColor = '#A855F7'; // purple
+        }
       }
 
       // 模拟作业条件等级
@@ -306,7 +323,8 @@ export const api = {
         index: i,
         cloudConcentration,
         isCloudy,
-        cloudColor: isCloudy ? '#3B82F6' : '#F97316',
+        cloudStatus,
+        cloudColor,
         temp: Number(temp.toFixed(1)),
         conditionLevel,
         conditionColor,

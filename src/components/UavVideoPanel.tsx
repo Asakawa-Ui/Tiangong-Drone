@@ -27,6 +27,11 @@ export default function UavVideoPanel({ onClose, currentSortie, isVisible = true
   }, []);
 
   useEffect(() => {
+    if (!isVisible) {
+      setConnectionStatus('error'); // Reset status when hidden
+      return;
+    }
+
     setConnectionStatus('connecting');
     let isMounted = true;
 
@@ -57,7 +62,7 @@ export default function UavVideoPanel({ onClose, currentSortie, isVisible = true
       clearTimeout(initialTimeout);
       clearInterval(interval);
     };
-  }, [stream]);
+  }, [stream, isVisible]);
 
   const parameters = [
     { label: '经度', value: '116.39°E' },

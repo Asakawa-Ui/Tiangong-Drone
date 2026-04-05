@@ -58,7 +58,7 @@ const ChartRow = ({ dataKey, name, data, yDomain, chartType, lineStroke = "#EF44
   </div>
 );
 
-export default function IcingMonitorTab({ currentSortie }: { currentSortie?: any }) {
+export default function IcingMonitorTab({ currentSortie, isRealTime = true }: { currentSortie?: any, isRealTime?: boolean }) {
   const [activeSubTab, setActiveSubTab] = useState('积冰监测');
   const [chartType, setChartType] = useState<'line' | 'scatter'>('scatter');
   const [data, setData] = useState<IcingData[]>([]);
@@ -76,8 +76,14 @@ export default function IcingMonitorTab({ currentSortie }: { currentSortie?: any
         setIsLoading(false);
       }
     };
+    
     fetchData();
-  }, [currentSortie]);
+    
+    if (isRealTime) {
+      const interval = setInterval(fetchData, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [currentSortie, isRealTime]);
 
   return (
     <div className="flex-1 w-full h-full flex flex-col bg-white min-h-0 relative">

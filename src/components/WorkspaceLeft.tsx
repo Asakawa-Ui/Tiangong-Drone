@@ -5,6 +5,8 @@ import './WorkspaceLeft.css';
 import { Radio, Switch } from './ui/SelectionControls';
 import Button from './ui/Button';
 import { api, Airspace, Sortie, Plan } from '../services/api';
+import DraggableAttachmentItem from './DraggableAttachmentItem';
+import { AttachmentObjectType } from '../types/attachment';
 
 function CustomTimePicker({ value, onChange }: { value: string, onChange: (val: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -107,7 +109,7 @@ function MoreMenu() {
   }, [isOpen]);
 
   return (
-    <div className="more-wrap relative" ref={menuRef}>
+    <div className="more-wrap relative no-drag" ref={menuRef}>
       <button 
         className="more-btn" 
         aria-label="更多"
@@ -767,22 +769,47 @@ export default function WorkspaceLeft({
 
               <div className="route-list" style={{ opacity: isRouteVisible ? 1 : 0.55 }}>
                 {routeVersions.map(v => (
-                  <div 
+                  <DraggableAttachmentItem
                     key={v.id}
-                    className={`route-item cursor-pointer ${activeRoute === v.id ? 'active' : ''}`} 
-                    data-kind="route"
-                    onClick={() => setActiveRoute?.(v.id)}
+                    item={{
+                      objectId: v.id,
+                      objectType: AttachmentObjectType.PREFLIGHT_ROUTE_VERSION,
+                      objectName: v.name,
+                      objectDisplayName: `${currentPlan?.name || '青海外场试飞计划方案'} ${v.id} ${v.name}`,
+                      previewThumbnailUrl: `https://picsum.photos/seed/route${v.id}/40/40`,
+                      draggable: true,
+                      isDeleted: false,
+                      isDraft: false,
+                      hasPermission: true,
+                      versionId: v.id,
+                      versionNo: v.id,
+                      versionName: v.name,
+                      flightPlanId: currentPlan?.id,
+                      flightPlanName: currentPlan?.name,
+                      sortieId: currentSortie?.id,
+                      sortieName: currentSortie?.code,
+                    }}
+                    className={`route-item ${activeRoute === v.id ? 'active' : ''}`}
                   >
                     <div className="route-main">
-                      <div className="route-title-row">
-                        <span className="route-version">{v.id}</span>
-                        <span className="route-name">{v.name}</span>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                          <img draggable={false} src={`https://picsum.photos/seed/route${v.id}/40/40`} alt="thumbnail" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <div className="route-title-row mb-1">
+                            <span className="route-version">{v.id}</span>
+                            <span className="route-name">{v.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="route-time">修改于 {v.time}</div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="route-time">最后修改于：{v.time}</div>
                     </div>
                     <Radio checked={activeRoute === v.id} onChange={() => setActiveRoute?.(v.id)} className="shrink-0" />
                     <MoreMenu />
-                  </div>
+                  </DraggableAttachmentItem>
                 ))}
               </div>
             </div>
@@ -802,25 +829,73 @@ export default function WorkspaceLeft({
                 </div>
 
                 <div className="layer-list">
-                  <div className="layer-item">
-                    <div className="layer-item-main">
-                      <span className="layer-index">01.</span>
-                      <span className="layer-name">预警产品-强对流危险区</span>
-                      <span className="layer-badge">系统生成</span>
+                  <DraggableAttachmentItem
+                    item={{
+                      objectId: 'danger-1',
+                      objectType: AttachmentObjectType.DANGER_ZONE,
+                      objectName: '预警产品-强对流危险区',
+                      objectDisplayName: '预警产品-强对流危险区',
+                      previewThumbnailUrl: 'https://picsum.photos/seed/danger1/40/40',
+                      draggable: true,
+                      isDeleted: false,
+                      isDraft: false,
+                      hasPermission: true,
+                      sortieId: currentSortie?.id,
+                      sortieName: currentSortie?.code,
+                    }}
+                    className="layer-item"
+                  >
+                    <div className="layer-item-main flex-1">
+                      <div className="flex items-center gap-3 w-full">
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                          <img draggable={false} src="https://picsum.photos/seed/danger1/40/40" alt="thumbnail" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        </div>
+                        <div className="flex flex-col min-w-0 flex-1 justify-center">
+                          <div className="flex items-center gap-2">
+                            <span className="layer-index">01.</span>
+                            <span className="layer-name">预警产品-强对流危险区</span>
+                            <span className="layer-badge shrink-0">系统生成</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     <Switch checked={activeLayers.danger1} onChange={() => setActiveLayers(prev => ({...prev, danger1: !prev.danger1}))} className="shrink-0" />
                     <MoreMenu />
-                  </div>
+                  </DraggableAttachmentItem>
 
-                  <div className="layer-item">
-                    <div className="layer-item-main">
-                      <span className="layer-index">02.</span>
-                      <span className="layer-name">预警产品-闪电预警区</span>
-                      <span className="layer-badge">系统生成</span>
+                  <DraggableAttachmentItem
+                    item={{
+                      objectId: 'danger-2',
+                      objectType: AttachmentObjectType.DANGER_ZONE,
+                      objectName: '预警产品-闪电预警区',
+                      objectDisplayName: '预警产品-闪电预警区',
+                      previewThumbnailUrl: 'https://picsum.photos/seed/danger2/40/40',
+                      draggable: true,
+                      isDeleted: false,
+                      isDraft: false,
+                      hasPermission: true,
+                      sortieId: currentSortie?.id,
+                      sortieName: currentSortie?.code,
+                    }}
+                    className="layer-item"
+                  >
+                    <div className="layer-item-main flex-1">
+                      <div className="flex items-center gap-3 w-full">
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                          <img draggable={false} src="https://picsum.photos/seed/danger2/40/40" alt="thumbnail" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        </div>
+                        <div className="flex flex-col min-w-0 flex-1 justify-center">
+                          <div className="flex items-center gap-2">
+                            <span className="layer-index">02.</span>
+                            <span className="layer-name">预警产品-闪电预警区</span>
+                            <span className="layer-badge shrink-0">系统生成</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     <Switch checked={activeLayers.danger2} onChange={() => setActiveLayers(prev => ({...prev, danger2: !prev.danger2}))} className="shrink-0" />
                     <MoreMenu />
-                  </div>
+                  </DraggableAttachmentItem>
                 </div>
               </div>
 
@@ -834,15 +909,39 @@ export default function WorkspaceLeft({
                 </div>
 
                 <div className="layer-list">
-                  <div className="layer-item">
-                    <div className="layer-item-main">
-                      <span className="layer-index">01.</span>
-                      <span className="layer-name">数值模式-潜力区</span>
-                      <span className="layer-badge">系统生成</span>
+                  <DraggableAttachmentItem
+                    item={{
+                      objectId: 'potential-1',
+                      objectType: AttachmentObjectType.POTENTIAL_ZONE,
+                      objectName: '数值模式-潜力区',
+                      objectDisplayName: '数值模式-潜力区',
+                      previewThumbnailUrl: 'https://picsum.photos/seed/potential1/40/40',
+                      draggable: true,
+                      isDeleted: false,
+                      isDraft: false,
+                      hasPermission: true,
+                      sortieId: currentSortie?.id,
+                      sortieName: currentSortie?.code,
+                    }}
+                    className="layer-item"
+                  >
+                    <div className="layer-item-main flex-1">
+                      <div className="flex items-center gap-3 w-full">
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                          <img draggable={false} src="https://picsum.photos/seed/potential1/40/40" alt="thumbnail" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        </div>
+                        <div className="flex flex-col min-w-0 flex-1 justify-center">
+                          <div className="flex items-center gap-2">
+                            <span className="layer-index">01.</span>
+                            <span className="layer-name">数值模式-潜力区</span>
+                            <span className="layer-badge shrink-0">系统生成</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     <Switch checked={activeLayers.potential1} onChange={() => setActiveLayers(prev => ({...prev, potential1: !prev.potential1}))} className="shrink-0" />
                     <MoreMenu />
-                  </div>
+                  </DraggableAttachmentItem>
                 </div>
               </div>
             </div>

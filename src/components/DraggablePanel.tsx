@@ -31,6 +31,7 @@ interface DraggablePanelProps {
   minWidth?: number;
   minHeight?: number;
   isVisible?: boolean;
+  headerExtra?: React.ReactNode;
 }
 
 export default function DraggablePanel({
@@ -45,7 +46,8 @@ export default function DraggablePanel({
   defaultSize = { width: 600, height: 500 },
   minWidth = 500,
   minHeight = 400,
-  isVisible = true
+  isVisible = true,
+  headerExtra
 }: DraggablePanelProps) {
   const [zIndex, setZIndex] = useState(() => getNextZIndex());
 
@@ -120,15 +122,22 @@ export default function DraggablePanel({
               <div className="text-[15px] font-medium text-black flex items-center gap-1.5">{title}</div>
             )}
           </div>
-          {onClose && (
-            <button 
-              onMouseDown={(e) => e.stopPropagation()} 
-              onClick={onClose} 
-              className="text-gray-400 hover:text-gray-600 cursor-pointer shrink-0 ml-4"
-            >
-              <X size={20} />
-            </button>
-          )}
+          <div className="flex items-center">
+            {headerExtra && (
+              <div onMouseDown={(e) => e.stopPropagation()}>
+                {headerExtra}
+              </div>
+            )}
+            {onClose && (
+              <button 
+                onMouseDown={(e) => e.stopPropagation()} 
+                onClick={onClose} 
+                className="text-gray-400 hover:text-gray-600 cursor-pointer shrink-0 ml-4"
+              >
+                <X size={20} />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* 内容区域 */}

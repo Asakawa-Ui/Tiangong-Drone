@@ -20,6 +20,9 @@ const ChartRow = ({ dataKey, name, color, data, yDomain, chartType }: any) => (
             <XAxis dataKey="time" hide />
             <YAxis 
               domain={yDomain} 
+              tickCount={5}
+              interval={0}
+              tickFormatter={(value) => Math.round(value).toString()}
               tick={{ fontSize: 10, fill: '#6B7280' }} 
               width={35} 
               axisLine={{ stroke: '#E5E7EB' }}
@@ -42,6 +45,9 @@ const ChartRow = ({ dataKey, name, color, data, yDomain, chartType }: any) => (
             <YAxis 
               dataKey={dataKey}
               domain={yDomain} 
+              tickCount={5}
+              interval={0}
+              tickFormatter={(value) => Math.round(value).toString()}
               tick={{ fontSize: 10, fill: '#6B7280' }} 
               width={35} 
               axisLine={{ stroke: '#E5E7EB' }}
@@ -56,7 +62,7 @@ const ChartRow = ({ dataKey, name, color, data, yDomain, chartType }: any) => (
   </div>
 );
 
-export default function CloudParamsTab({ currentSortie }: { currentSortie?: any }) {
+export default function CloudParamsTab({ currentSortie, isRealTime = true }: { currentSortie?: any, isRealTime?: boolean }) {
   const [activeSubTab, setActiveSubTab] = useState('CDP探头');
   const [chartType, setChartType] = useState<'line' | 'scatter'>('line');
   const [data, setData] = useState<CloudData[]>([]);
@@ -74,8 +80,14 @@ export default function CloudParamsTab({ currentSortie }: { currentSortie?: any 
         setIsLoading(false);
       }
     };
+    
     fetchData();
-  }, [currentSortie]);
+    
+    if (isRealTime) {
+      const interval = setInterval(fetchData, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [currentSortie, isRealTime]);
 
   return (
     <div className="flex-1 w-full h-full flex flex-col bg-white min-h-0 relative">

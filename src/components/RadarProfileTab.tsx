@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ComposedChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { api, RadarData } from '../services/api';
 
-export default function RadarProfileTab({ currentSortie }: { currentSortie?: any }) {
+export default function RadarProfileTab({ currentSortie, isRealTime = true }: { currentSortie?: any, isRealTime?: boolean }) {
   const [data, setData] = useState<RadarData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -18,8 +18,14 @@ export default function RadarProfileTab({ currentSortie }: { currentSortie?: any
         setIsLoading(false);
       }
     };
+    
     fetchData();
-  }, [currentSortie]);
+    
+    if (isRealTime) {
+      const interval = setInterval(fetchData, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [currentSortie, isRealTime]);
 
   return (
     <div className="flex-1 p-4 min-h-0 w-full h-full flex flex-col relative">
@@ -35,6 +41,9 @@ export default function RadarProfileTab({ currentSortie }: { currentSortie?: any
               yAxisId="left" 
               orientation="left" 
               stroke="#3B82F6" 
+              tickCount={5}
+              interval={0}
+              tickFormatter={(value) => Math.round(value).toString()}
               tick={{ fontSize: 12 }}
               label={{ value: '高度 (km)', angle: -90, position: 'insideLeft', offset: 10 }} 
               domain={[0, 8]}
@@ -43,6 +52,9 @@ export default function RadarProfileTab({ currentSortie }: { currentSortie?: any
               yAxisId="right" 
               orientation="right" 
               stroke="#EF4444" 
+              tickCount={5}
+              interval={0}
+              tickFormatter={(value) => Math.round(value).toString()}
               tick={{ fontSize: 12 }}
               label={{ value: '温度 (°C)', angle: 90, position: 'insideRight', offset: 10 }} 
               domain={[-30, 50]}

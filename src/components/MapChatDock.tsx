@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { Mic, Video, Paperclip, ArrowUp, X, User, Bot, ShieldAlert } from 'lucide-react';
+import { Mic, Video, Paperclip, ArrowUp, X, User, Bot, ShieldAlert, Image as ImageIcon } from 'lucide-react';
+import { toast } from 'sonner';
+import { DraggableObjectListItemDTO } from '../types/attachment';
 
 const chatHistory = [
   { id: 1, time: '14:05', sender: 'operator', senderName: '西北区域人影指挥中心', text: '危险区边界坐标已确认，继续执行目标区域扫描。' },
@@ -15,6 +17,8 @@ export default function MapChatDock({ isFullscreen }: { isFullscreen?: boolean }
   const [expanded, setExpanded] = useState(false);
   const [inputText, setInputText] = useState('');
   const inputRef = useRef<HTMLDivElement>(null);
+  const [pendingAttachments, setPendingAttachments] = useState<DraggableObjectListItemDTO[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const handleInput = () => {
     if (inputRef.current) {
@@ -22,24 +26,92 @@ export default function MapChatDock({ isFullscreen }: { isFullscreen?: boolean }
     }
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+    e.dataTransfer.dropEffect = 'copy';
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setIsDragOver(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    try {
+      const data = e.dataTransfer.getData('application/json');
+      if (data) {
+        const item = JSON.parse(data) as DraggableObjectListItemDTO;
+        
+        setPendingAttachments(prev => {
+          if (prev.find(a => a.objectId === item.objectId)) {
+            toast.warning('该附件已加入待发送区');
+            return prev;
+          }
+          if (prev.length >= 5) {
+            toast.warning('已达最大附件数量上限');
+            return prev;
+          }
+          return [...prev, item];
+        });
+      }
+    } catch (err) {
+      console.error('Failed to parse dropped item', err);
+    }
+  };
+
+  const removeAttachment = (id: string) => {
+    setPendingAttachments(prev => prev.filter(a => a.objectId !== id));
+  };
+
   return (
     <div 
       className={`absolute bottom-6 left-1/2 -translate-x-1/2 ${isFullscreen ? 'w-1/3' : 'w-1/2'} rounded-[28px] p-[18px_18px_16px] transition-all duration-300 z-[9999] ${
         expanded ? 'uav-glass-active' : 'uav-glass'
-      }`}
+      } ${isDragOver ? 'ring-2 ring-[#2E5ED7] bg-[#2E5ED7]/5' : ''}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
     >
       <div className="flex items-center justify-between gap-3 mb-3.5 flex-wrap">
         <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
-          <button className="bg-[#F0F4FA] hover:bg-[#E4E9F2] transition-colors h-10 px-3 pl-2.5 rounded-full inline-flex items-center gap-2.5 text-[#5B6575] text-sm font-bold cursor-pointer uav-inset">
-            <span className="w-[26px] h-[26px] rounded-lg shrink-0 bg-white/60 shadow-sm"></span>
-            <span className="whitespace-nowrap">危险区预览</span>
-            <X size={14} className="text-[#2E5ED7] shrink-0" strokeWidth={3} />
-          </button>
-          <button className="bg-[#F0F4FA] hover:bg-[#E4E9F2] transition-colors h-10 px-3 pl-2.5 rounded-full inline-flex items-center gap-2.5 text-[#5B6575] text-sm font-bold cursor-pointer uav-inset">
-            <span className="w-[26px] h-[26px] rounded-lg shrink-0 bg-white/60 shadow-sm"></span>
-            <span className="whitespace-nowrap">航线元数据</span>
-            <X size={14} className="text-[#2E5ED7] shrink-0" strokeWidth={3} />
-          </button>
+          {pendingAttachments.map(attachment => {
+            const nameToDisplay = attachment.objectDisplayName || attachment.objectName;
+            const displayName = nameToDisplay.length > 20 
+              ? `${nameToDisplay.slice(0, 20)}...` 
+              : nameToDisplay;
+              
+            return (
+              <button 
+                key={attachment.objectId} 
+                className="bg-[#F0F4FA] hover:bg-[#E4E9F2] transition-colors h-10 px-3 pl-2.5 rounded-full inline-flex items-center gap-2.5 text-[#5B6575] text-sm font-bold cursor-pointer uav-inset"
+                title={nameToDisplay}
+              >
+                <div className="w-[26px] h-[26px] rounded-lg shrink-0 bg-white/60 shadow-sm overflow-hidden flex items-center justify-center">
+                  {attachment.previewThumbnailUrl ? (
+                    <img draggable={false} src={attachment.previewThumbnailUrl} alt="thumbnail" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  ) : (
+                    <ImageIcon size={14} className="text-[#8D97A7]" />
+                  )}
+                </div>
+                <span className="whitespace-nowrap">{displayName}</span>
+                <X 
+                  size={14} 
+                  className="text-[#2E5ED7] shrink-0 hover:text-red-500 transition-colors" 
+                  strokeWidth={3} 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeAttachment(attachment.objectId);
+                  }}
+                />
+              </button>
+            );
+          })}
         </div>
         <button 
           className="bg-[#F0F4FA] hover:bg-[#E4E9F2] h-10 px-4 rounded-full inline-flex items-center gap-2.5 text-[#2E5ED7] text-sm font-bold cursor-pointer transition-colors uav-inset"

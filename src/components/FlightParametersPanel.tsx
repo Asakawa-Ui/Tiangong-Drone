@@ -26,6 +26,7 @@ const metrics = [
 
 export default function FlightParametersPanel({ onClose, currentSortie, isVisible = true, isMapFullscreen = false }: { onClose?: () => void, currentSortie?: any, isVisible?: boolean, isMapFullscreen?: boolean }) {
   const [activeTab, setActiveTab] = useState('飞行参数');
+  const [isRealTime, setIsRealTime] = useState(true);
   const [data, setData] = useState<FlightData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [visibleMetrics, setVisibleMetrics] = useState<Record<string, boolean>>({
@@ -49,8 +50,14 @@ export default function FlightParametersPanel({ onClose, currentSortie, isVisibl
         setIsLoading(false);
       }
     };
+    
     fetchData();
-  }, [currentSortie]);
+    
+    if (isRealTime) {
+      const interval = setInterval(fetchData, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [currentSortie, isVisible, isRealTime]);
 
   const toggleMetric = (key: string) => {
     setVisibleMetrics(prev => ({ ...prev, [key]: !prev[key] }));
@@ -80,6 +87,33 @@ export default function FlightParametersPanel({ onClose, currentSortie, isVisibl
     { id: '危险监测', label: '危险监测', icon: <AlertTriangle size={16} /> }
   ];
 
+  const headerExtra = (
+    <div className="flex p-1 space-x-1 bg-gray-100/80 rounded-full w-fit border border-gray-200/50 mr-2">
+      <button
+        onClick={() => setIsRealTime(true)}
+        className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
+          isRealTime
+            ? 'bg-white text-blue-600 shadow-sm ring-1 ring-gray-200/50'
+            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+        }`}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${isRealTime ? 'bg-blue-500 animate-pulse' : 'bg-gray-300'}`}></span>
+        实时
+      </button>
+      <button
+        onClick={() => setIsRealTime(false)}
+        className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
+          !isRealTime
+            ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200/50'
+            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+        }`}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${!isRealTime ? 'bg-gray-600' : 'bg-gray-300'}`}></span>
+        非实时
+      </button>
+    </div>
+  );
+
   return (
     <DraggablePanel
       id="flight-parameters"
@@ -88,6 +122,7 @@ export default function FlightParametersPanel({ onClose, currentSortie, isVisibl
       onTabChange={setActiveTab}
       onClose={onClose}
       isVisible={isVisible}
+      headerExtra={headerExtra}
       defaultPosition={{ x: isMapFullscreen ? 767 + 500 : 767, y: 52 }}
       defaultSize={{ width: 648, height: 449 }}
       minWidth={400}
@@ -150,6 +185,9 @@ export default function FlightParametersPanel({ onClose, currentSortie, isVisibl
                         yAxisId={metric.key} 
                         orientation={metric.orientation as any} 
                         stroke={metric.color} 
+                        tickCount={5}
+                        interval={0}
+                        tickFormatter={(value) => Math.round(value).toString()}
                         tick={{ fontSize: 12 }}
                         domain={metric.domain}
                         label={{ 
@@ -195,9 +233,9 @@ export default function FlightParametersPanel({ onClose, currentSortie, isVisibl
           </>
         )}
         
-        {activeTab === '雷达剖面' && <RadarProfileTab currentSortie={currentSortie} />}
-        {activeTab === '云参数' && <CloudParamsTab currentSortie={currentSortie} />}
-        {activeTab === '危险监测' && <IcingMonitorTab currentSortie={currentSortie} />}
+        {activeTab === '雷达剖面' && <RadarProfileTab currentSortie={currentSortie} isRealTime={isRealTime} />}
+        {activeTab === '云参数' && <CloudParamsTab currentSortie={currentSortie} isRealTime={isRealTime} />}
+        {activeTab === '危险监测' && <IcingMonitorTab currentSortie={currentSortie} isRealTime={isRealTime} />}
     </DraggablePanel>
   );
 }

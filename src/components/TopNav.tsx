@@ -22,11 +22,15 @@ export default function TopNav() {
 
   return (
     <div className="h-[70px] w-full bg-[#5487E4] flex items-center justify-between px-6 text-white shrink-0 shadow-sm z-20 relative">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#5487E4] font-black text-xs shadow-inner">
-          WMC
+      <div className="flex items-center gap-2">
+        <div className="h-14 flex items-center justify-center text-white font-black text-xs">
+          <img src="/assets/images/uav_logo_flat_transparent.png" alt="logo" className="h-full w-auto object-contain" onError={(e) => {
+            // Fallback if logo is not found
+            (e.target as HTMLImageElement).style.display = 'none';
+            (e.target as HTMLImageElement).parentElement!.innerText = 'WMC';
+          }} />
         </div>
-        <span className="text-[22px] font-bold tracking-wide" style={{ fontFamily: 'PingFang SC, sans-serif' }}>天工 V2.0 - 国家</span>
+        <span className="text-[22px] font-bold tracking-wide" style={{ fontFamily: 'PingFang SC, sans-serif' }}>天工-无人机版</span>
       </div>
 
       <div className="flex items-center h-full">
