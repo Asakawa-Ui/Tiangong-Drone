@@ -5,13 +5,44 @@ import { MapPin, SatelliteDish, Star, ChevronDown, Check, FileText, Layers } fro
  * 公共组件-GIS功能快捷组件
  * 提供地图图层控制、操作工具、标绘工具、分析工具等快捷操作面板
  */
-export default function GISFunctionShortcuts() {
-  const [activeTopButton, setActiveTopButton] = useState('distribution');
-  const [isPanelExpanded, setIsPanelExpanded] = useState(false);
+interface GISFunctionShortcutsProps {
+  onRadarToggle?: (visible: boolean) => void;
+  isRadarVisible?: boolean;
+  activeAirspaceLayer?: boolean;
+  setActiveAirspaceLayer?: (visible: boolean) => void;
+}
+
+export default function GISFunctionShortcuts({ 
+  onRadarToggle, 
+  isRadarVisible,
+  activeAirspaceLayer = false,
+  setActiveAirspaceLayer
+}: GISFunctionShortcutsProps) {
+  const [activeTopButton, setActiveTopButton] = useState('weather');
+  const [isPanelExpanded, setIsPanelExpanded] = useState(true);
   const [isToolbarExpanded, setIsToolbarExpanded] = useState(false);
-  const [weatherTab, setWeatherTab] = useState('warning');
-  const [activeSubCategory, setActiveSubCategory] = useState<string | null>('SWAN雷达');
-  const [activeSubProduct, setActiveSubProduct] = useState<string | null>('反射率临近预报');
+  const [weatherTab, setWeatherTab] = useState('observation');
+  const [activeSubCategory, setActiveSubCategory] = useState<string | null>('全国拼图V3');
+  const [activeSubProduct, setActiveSubProduct] = useState<string | null>('组合反射率');
+
+  // Sync with prop
+  React.useEffect(() => {
+    if (isRadarVisible && (activeSubProduct !== '组合反射率' || activeSubCategory !== '全国拼图V3')) {
+      setActiveSubProduct('组合反射率');
+      setActiveSubCategory('全国拼图V3');
+    } else if (!isRadarVisible && activeSubProduct === '组合反射率' && activeSubCategory === '全国拼图V3') {
+      setActiveSubProduct(null);
+    }
+  }, [isRadarVisible]);
+
+  // Toggle off radar when other products are selected
+  React.useEffect(() => {
+    if (activeSubProduct !== '组合反射率' || activeSubCategory !== '全国拼图V3') {
+      if (isRadarVisible) {
+        onRadarToggle?.(false);
+      }
+    }
+  }, [activeSubProduct, activeSubCategory]);
   
   const [sections, setSections] = useState({
     map: false,
@@ -216,6 +247,13 @@ export default function GISFunctionShortcuts() {
                     <CheckboxItem label="保障作业点" icon={<div className="w-2 h-2 rounded-full bg-[#5185E8]"></div>} />
                     <CheckboxItem label="专项飞机停靠点" icon={<div className="w-3 h-3 border border-[#999999]"></div>} />
                     <CheckboxItem label="飞机作业空域分区图" className="col-span-2" />
+                    <CheckboxItem 
+                      label="青海空域网格" 
+                      className="col-span-2"
+                      icon={<div className="w-3 h-3 bg-[#2F63F6] opacity-50 border border-[#1D4ED8]"></div>} 
+                      checked={activeAirspaceLayer}
+                      onChange={() => setActiveAirspaceLayer?.(!activeAirspaceLayer)}
+                    />
                   </div>
                 </div>
 
@@ -344,7 +382,14 @@ export default function GISFunctionShortcuts() {
                             <div className="grid grid-cols-3 gap-1 text-[12px]">
                               <div 
                                 className={`text-center py-1 rounded-[3px] cursor-pointer ${activeSubProduct === '组合反射率' ? 'bg-[#C1D6FF] text-[#5185E8]' : 'text-[#666666] hover:text-[#5185E8]'}`}
-                                onClick={() => setActiveSubProduct('组合反射率')}
+                                onClick={() => {
+                                  const isCurrentlyActive = activeSubProduct === '组合反射率' && activeSubCategory === '全国拼图V3';
+                                  if (isCurrentlyActive) {
+                                    onRadarToggle?.(false);
+                                  } else {
+                                    onRadarToggle?.(true);
+                                  }
+                                }}
                               >
                                 组合反射率
                               </div>
@@ -753,9 +798,9 @@ export default function GISFunctionShortcuts() {
   );
 }
 
-function CheckboxItem({ label, icon, checked = false, className = '' }: { label: string, icon?: React.ReactNode, checked?: boolean, className?: string }) {
+function CheckboxItem({ label, icon, checked = false, className = '', onChange }: { label: string, icon?: React.ReactNode, checked?: boolean, className?: string, onChange?: () => void }) {
   return (
-    <label className={`flex items-center gap-2 cursor-pointer ${className}`}>
+    <label className={`flex items-center gap-2 cursor-pointer ${className}`} onClick={onChange}>
       <div className={`w-3.5 h-3.5 rounded-[2px] border flex items-center justify-center shrink-0 ${checked ? 'bg-[#5185E8] border-[#5185E8]' : 'border-[#C1D6FF] bg-white'}`}>
         {checked && <Check size={10} color="white" strokeWidth={3} />}
       </div>

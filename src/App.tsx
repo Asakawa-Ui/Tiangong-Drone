@@ -43,6 +43,13 @@ export default function App() {
     potential1: true
   });
 
+  // 空域管理状态
+  const [selectedAirspaceIds, setSelectedAirspaceIds] = useState<string[]>(['region-20']);
+  const [airspaceTimeRanges, setAirspaceTimeRanges] = useState<Record<string, string>>({
+    'region-20': '00:00 - 23:00'
+  });
+  const [activeAirspaceLayer, setActiveAirspaceLayer] = useState(true);
+
   return (
     <div className="flex flex-col w-screen h-screen overflow-hidden bg-white font-sans text-[#333333]">
       <Toaster position="top-center" />
@@ -95,6 +102,12 @@ export default function App() {
                           setActiveRoute={setActiveRoute}
                           activeLayers={activeLayers}
                           setActiveLayers={setActiveLayers}
+                          selectedAirspaceIds={selectedAirspaceIds}
+                          setSelectedAirspaceIds={setSelectedAirspaceIds}
+                          airspaceTimeRanges={airspaceTimeRanges}
+                          setAirspaceTimeRanges={setAirspaceTimeRanges}
+                          activeAirspaceLayer={activeAirspaceLayer}
+                          setActiveAirspaceLayer={setActiveAirspaceLayer}
                         />
                       </div>
                       {/* 右侧容器框：放地图 */}
@@ -113,6 +126,12 @@ export default function App() {
                           isRouteVisible={isRouteVisible}
                           activeRoute={activeRoute}
                           activeLayers={activeLayers}
+                          selectedAirspaceIds={selectedAirspaceIds}
+                          setSelectedAirspaceIds={setSelectedAirspaceIds}
+                          airspaceTimeRanges={airspaceTimeRanges}
+                          activeAirspaceLayer={activeAirspaceLayer}
+                          setActiveAirspaceLayer={setActiveAirspaceLayer}
+                          setAirspaceTimeRanges={setAirspaceTimeRanges}
                         />
                       </div>
                     </div>

@@ -3,6 +3,8 @@ export enum AttachmentObjectType {
   DANGER_ZONE = 'DANGER_ZONE',
   POTENTIAL_ZONE = 'POTENTIAL_ZONE',
   PREFLIGHT_ROUTE_VERSION = 'PREFLIGHT_ROUTE_VERSION',
+  ZONE = 'ZONE',
+  AIRSPACE = 'AIRSPACE',
 }
 
 export interface DraggableObjectListItemDTO {

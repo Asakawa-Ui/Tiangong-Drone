@@ -20,18 +20,10 @@ export default function RadarProfileTab({ currentSortie, isRealTime = true }: { 
     };
     
     fetchData();
-    
-    if (isRealTime) {
-      const interval = setInterval(fetchData, 3000);
-      return () => clearInterval(interval);
-    }
   }, [currentSortie, isRealTime]);
 
   return (
     <div className="flex-1 p-4 min-h-0 w-full h-full flex flex-col relative">
-      {isLoading ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10 text-gray-500">加载中...</div>
-      ) : null}
       <div className="flex-1 min-h-0">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={data} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>

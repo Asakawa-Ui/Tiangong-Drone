@@ -78,129 +78,134 @@ export default function MapChatDock({ isFullscreen }: { isFullscreen?: boolean }
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <div className="flex items-center justify-between gap-3 mb-3.5 flex-wrap">
-        <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
-          {pendingAttachments.map(attachment => {
-            const nameToDisplay = attachment.objectDisplayName || attachment.objectName;
-            const displayName = nameToDisplay.length > 20 
-              ? `${nameToDisplay.slice(0, 20)}...` 
-              : nameToDisplay;
-              
-            return (
-              <button 
-                key={attachment.objectId} 
-                className="bg-[#F0F4FA] hover:bg-[#E4E9F2] transition-colors h-10 px-3 pl-2.5 rounded-full inline-flex items-center gap-2.5 text-[#5B6575] text-sm font-bold cursor-pointer uav-inset"
-                title={nameToDisplay}
-              >
-                <div className="w-[26px] h-[26px] rounded-lg shrink-0 bg-white/60 shadow-sm overflow-hidden flex items-center justify-center">
-                  {attachment.previewThumbnailUrl ? (
-                    <img draggable={false} src={attachment.previewThumbnailUrl} alt="thumbnail" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                  ) : (
-                    <ImageIcon size={14} className="text-[#8D97A7]" />
-                  )}
-                </div>
-                <span className="whitespace-nowrap">{displayName}</span>
-                <X 
-                  size={14} 
-                  className="text-[#2E5ED7] shrink-0 hover:text-red-500 transition-colors" 
-                  strokeWidth={3} 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeAttachment(attachment.objectId);
-                  }}
-                />
-              </button>
-            );
-          })}
-        </div>
+      <div className="relative w-full">
+        {/* 历史按钮 - 绝对定位到右上角 */}
         <button 
-          className="bg-[#F0F4FA] hover:bg-[#E4E9F2] h-10 px-4 rounded-full inline-flex items-center gap-2.5 text-[#2E5ED7] text-sm font-bold cursor-pointer transition-colors uav-inset"
+          className="absolute top-0 right-0 bg-[#F0F4FA] hover:bg-[#E4E9F2] h-10 px-4 rounded-full inline-flex items-center gap-2.5 text-[#2E5ED7] text-sm font-bold cursor-pointer transition-colors uav-inset z-10"
           style={{ backgroundColor: expanded ? 'rgba(46, 94, 215, 0.08)' : undefined }}
           onClick={() => setExpanded(!expanded)}
         >
           历史
         </button>
-      </div>
 
-      {expanded && (
-        <div className="mb-4">
-          <div className="max-h-[350px] overflow-y-auto pr-2 pb-4 flex flex-col gap-5 w-full custom-scrollbar">
-            {chatHistory.map((msg) => {
-              const isUser = msg.sender === 'user';
-              const isSystem = msg.sender === 'system';
-              
+        {/* 附件区域 */}
+        {pendingAttachments.length > 0 && (
+          <div className="flex items-center gap-2.5 mb-3.5 flex-wrap pr-20">
+            {pendingAttachments.map(attachment => {
+              const nameToDisplay = attachment.objectDisplayName || attachment.objectName;
+              const displayName = nameToDisplay.length > 20 
+                ? `${nameToDisplay.slice(0, 20)}...` 
+                : nameToDisplay;
+                
               return (
-                <div key={msg.id} className={`flex gap-3 w-full ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-                  {/* Avatar */}
-                  <div className="shrink-0 flex flex-col items-center mt-1">
-                    <div className={`w-9 h-9 rounded-full flex items-center justify-center shadow-sm ${
-                      isUser ? 'bg-[#2E5ED7] text-white' : 
-                      isSystem ? 'bg-[#2F7246] text-white' : 
-                      'bg-[#A0AABF] text-white'
-                    }`}>
-                      {isUser ? <User size={18} /> : isSystem ? <Bot size={18} /> : <ShieldAlert size={18} />}
-                    </div>
+                <button 
+                  key={attachment.objectId} 
+                  className="bg-[#F0F4FA] hover:bg-[#E4E9F2] transition-colors h-10 px-3 pl-2.5 rounded-full inline-flex items-center gap-2.5 text-[#5B6575] text-sm font-bold cursor-pointer uav-inset"
+                  title={nameToDisplay}
+                >
+                  <div className="w-[26px] h-[26px] rounded-lg shrink-0 bg-white/60 shadow-sm overflow-hidden flex items-center justify-center">
+                    {attachment.previewThumbnailUrl ? (
+                      <img draggable={false} src={attachment.previewThumbnailUrl} alt="thumbnail" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    ) : (
+                      <ImageIcon size={14} className="text-[#8D97A7]" />
+                    )}
                   </div>
-                  
-                  {/* Message Body */}
-                  <div className={`flex flex-col gap-1.5 max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`}>
-                    <div className={`flex items-baseline gap-2 px-1 ${isUser ? 'flex-row-reverse' : 'flex-row'} max-w-full`}>
-                      <span className="text-[13px] font-bold text-[#5B6575] truncate max-w-[240px]" title={msg.senderName}>
-                        {msg.senderName}
-                      </span>
-                      <span className="text-[11px] font-medium text-[#8D97A7] shrink-0">
-                        {msg.time}
-                      </span>
-                    </div>
-                    <div className={`w-full relative rounded-[22px] p-[14px_18px] text-[15px] leading-[1.5] font-medium break-words ${
-                      isUser 
-                        ? 'bg-[#2E5ED7] text-white rounded-tr-none' 
-                        : isSystem
-                          ? 'bg-[#F0F4FA] text-[#244933] rounded-tl-none'
-                          : 'bg-[#F0F4FA] text-[#3F454F] rounded-tl-none'
-                    }`}>
-                      {isSystem && <strong className="text-[#2F7246] mr-1.5">SYSTEM:</strong>}
-                      {msg.text}
-                    </div>
-                  </div>
-                </div>
+                  <span className="whitespace-nowrap">{displayName}</span>
+                  <X 
+                    size={14} 
+                    className="text-[#2E5ED7] shrink-0 hover:text-red-500 transition-colors" 
+                    strokeWidth={3} 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeAttachment(attachment.objectId);
+                    }}
+                  />
+                </button>
               );
             })}
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="flex flex-col gap-3.5 w-full">
-        <div className="relative w-full rounded-[20px] p-3">
-          <div 
-            ref={inputRef}
-            className="min-h-[48px] max-h-[116px] overflow-y-auto custom-scrollbar w-full max-w-full pt-1 px-1 bg-transparent border-none text-base leading-[1.45] text-[#1F2430] font-medium outline-none break-words"
-            contentEditable
-            onInput={handleInput}
-            onBlur={handleInput}
-          ></div>
-          {inputText.trim() === '' && (
-            <div className="absolute top-4 left-4 text-[#8D97A7] pointer-events-none text-base leading-[1.45] font-medium">
-              输入需要创建、修改或下发的内容…
+        {expanded && (
+          <div className="mb-4 pt-12">
+            <div className="max-h-[350px] overflow-y-auto pr-2 pb-4 flex flex-col gap-5 w-full custom-scrollbar">
+              {chatHistory.map((msg) => {
+                const isUser = msg.sender === 'user';
+                const isSystem = msg.sender === 'system';
+                
+                return (
+                  <div key={msg.id} className={`flex gap-3 w-full ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+                    {/* Avatar */}
+                    <div className="shrink-0 flex flex-col items-center mt-1">
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center shadow-sm ${
+                        isUser ? 'bg-[#2E5ED7] text-white' : 
+                        isSystem ? 'bg-[#2F7246] text-white' : 
+                        'bg-[#A0AABF] text-white'
+                      }`}>
+                        {isUser ? <User size={18} /> : isSystem ? <Bot size={18} /> : <ShieldAlert size={18} />}
+                      </div>
+                    </div>
+                    
+                    {/* Message Body */}
+                    <div className={`flex flex-col gap-1.5 max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`}>
+                      <div className={`flex items-baseline gap-2 px-1 ${isUser ? 'flex-row-reverse' : 'flex-row'} max-w-full`}>
+                        <span className="text-[13px] font-bold text-[#5B6575] truncate max-w-[240px]" title={msg.senderName}>
+                          {msg.senderName}
+                        </span>
+                        <span className="text-[11px] font-medium text-[#8D97A7] shrink-0">
+                          {msg.time}
+                        </span>
+                      </div>
+                      <div className={`w-full relative rounded-[22px] p-[14px_18px] text-[15px] leading-[1.5] font-medium break-words ${
+                        isUser 
+                          ? 'bg-[#2E5ED7] text-white rounded-tr-none' 
+                          : isSystem
+                            ? 'bg-[#F0F4FA] text-[#244933] rounded-tl-none'
+                            : 'bg-[#F0F4FA] text-[#3F454F] rounded-tl-none'
+                      }`}>
+                        {isSystem && <strong className="text-[#2F7246] mr-1.5">SYSTEM:</strong>}
+                        {msg.text}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          )}
-        </div>
-        <div className="flex items-center justify-between gap-3.5">
-          <div className="flex items-center gap-2.5">
-            <button className="bg-[#F0F4FA] hover:bg-[#E4E9F2] transition-colors w-10 h-10 rounded-xl inline-flex items-center justify-center text-[#465062] cursor-pointer uav-inset">
-              <Mic size={19} />
-            </button>
-            <button className="bg-[#F0F4FA] hover:bg-[#E4E9F2] transition-colors w-10 h-10 rounded-xl inline-flex items-center justify-center text-[#465062] cursor-pointer uav-inset">
-              <Video size={19} />
-            </button>
-            <button className="bg-[#F0F4FA] hover:bg-[#E4E9F2] transition-colors w-10 h-10 rounded-xl inline-flex items-center justify-center text-[#465062] cursor-pointer uav-inset">
-              <Paperclip size={19} />
+          </div>
+        )}
+
+        <div className="flex flex-col gap-3.5 w-full">
+          <div className={`relative w-full rounded-[20px] p-3 ${pendingAttachments.length === 0 ? 'pr-20' : ''}`}>
+            <div 
+              ref={inputRef}
+              className="min-h-[48px] max-h-[116px] overflow-y-auto custom-scrollbar w-full max-w-full pt-1 px-1 bg-transparent border-none text-base leading-[1.45] text-[#1F2430] font-medium outline-none break-words"
+              contentEditable
+              onInput={handleInput}
+              onBlur={handleInput}
+            ></div>
+            {inputText.trim() === '' && (
+              <div className="absolute top-4 left-4 text-[#8D97A7] pointer-events-none text-base leading-[1.45] font-medium">
+                输入需要创建、修改或下发的内容…
+              </div>
+            )}
+          </div>
+          <div className="flex items-center justify-between gap-3.5">
+            <div className="flex items-center gap-2.5">
+              <button className="bg-[#F0F4FA] hover:bg-[#E4E9F2] transition-colors w-10 h-10 rounded-xl inline-flex items-center justify-center text-[#465062] cursor-pointer uav-inset">
+                <Mic size={19} />
+              </button>
+              <button className="bg-[#F0F4FA] hover:bg-[#E4E9F2] transition-colors w-10 h-10 rounded-xl inline-flex items-center justify-center text-[#465062] cursor-pointer uav-inset">
+                <Video size={19} />
+              </button>
+              <button className="bg-[#F0F4FA] hover:bg-[#E4E9F2] transition-colors w-10 h-10 rounded-xl inline-flex items-center justify-center text-[#465062] cursor-pointer uav-inset">
+                <Paperclip size={19} />
+              </button>
+            </div>
+            <button className="w-[52px] h-[52px] rounded-full inline-flex items-center justify-center text-white shadow-[0_14px_28px_rgba(47,105,232,0.24)] border-none cursor-pointer"
+              style={{ background: 'linear-gradient(180deg, #4F84F0, #2F69E8)' }}>
+              <ArrowUp size={24} strokeWidth={3} />
             </button>
           </div>
-          <button className="w-[52px] h-[52px] rounded-full inline-flex items-center justify-center text-white shadow-[0_14px_28px_rgba(47,105,232,0.24)] border-none cursor-pointer"
-            style={{ background: 'linear-gradient(180deg, #4F84F0, #2F69E8)' }}>
-            <ArrowUp size={24} strokeWidth={3} />
-          </button>
         </div>
       </div>
     </div>

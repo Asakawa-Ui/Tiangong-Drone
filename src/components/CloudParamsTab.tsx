@@ -82,18 +82,10 @@ export default function CloudParamsTab({ currentSortie, isRealTime = true }: { c
     };
     
     fetchData();
-    
-    if (isRealTime) {
-      const interval = setInterval(fetchData, 3000);
-      return () => clearInterval(interval);
-    }
   }, [currentSortie, isRealTime]);
 
   return (
     <div className="flex-1 w-full h-full flex flex-col bg-white min-h-0 relative">
-      {isLoading ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10 text-gray-500">加载中...</div>
-      ) : null}
       {/* 二级 Tab 和 切换开关 */}
       <div className="h-10 flex items-center justify-between px-4 border-b border-gray-100 shrink-0">
         <div className="flex gap-6 h-full">

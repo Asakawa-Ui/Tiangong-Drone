@@ -89,7 +89,7 @@ export default function OperationConditionPanel({ onClose, currentSortie, isVisi
             : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
         }`}
       >
-        <span className={`w-1.5 h-1.5 rounded-full ${isRealTime ? 'bg-blue-500 animate-pulse' : 'bg-gray-300'}`}></span>
+        <span className={`w-1.5 h-1.5 rounded-full ${isRealTime ? 'bg-blue-500' : 'bg-gray-300'}`}></span>
         实时
       </button>
       <button
@@ -122,9 +122,6 @@ export default function OperationConditionPanel({ onClose, currentSortie, isVisi
       defaultSize={{ width: 500, height: 544 }}
     >
       <div className="flex-1 flex flex-col min-h-0 bg-white relative">
-        {isLoading ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10 text-gray-500">加载中...</div>
-        ) : null}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-4">
           {/* 模式切换与时间过滤 */}
           <div className="flex justify-start items-center shrink-0">
@@ -146,7 +143,6 @@ export default function OperationConditionPanel({ onClose, currentSortie, isVisi
               </div>
             )}
           </div>
-
           {/* 入云情况图表 */}
           <div className="h-[120px] shrink-0 w-full flex flex-col">
             <div className="flex items-center gap-4 mb-1">
@@ -265,7 +261,7 @@ export default function OperationConditionPanel({ onClose, currentSortie, isVisi
                 <span>{displayData[displayData.length - 1]?.time}</span>
               </>
             ) : (
-              <span className="w-full text-center">加载中...</span>
+              <span className="w-full text-center"></span>
             )}
           </div>
           {!isRealTime && data.length > 0 && (

@@ -148,6 +148,12 @@ interface WorkspaceLeftProps {
   setActiveRoute?: React.Dispatch<React.SetStateAction<string>>;
   activeLayers: { danger1: boolean; danger2: boolean; potential1: boolean };
   setActiveLayers: React.Dispatch<React.SetStateAction<{ danger1: boolean; danger2: boolean; potential1: boolean }>>;
+  selectedAirspaceIds: string[];
+  setSelectedAirspaceIds: React.Dispatch<React.SetStateAction<string[]>>;
+  airspaceTimeRanges: Record<string, string>;
+  setAirspaceTimeRanges: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  activeAirspaceLayer: boolean;
+  setActiveAirspaceLayer: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function WorkspaceLeft({ 
@@ -162,7 +168,13 @@ export default function WorkspaceLeft({
   activeRoute = 'V1',
   setActiveRoute,
   activeLayers,
-  setActiveLayers
+  setActiveLayers,
+  selectedAirspaceIds,
+  setSelectedAirspaceIds,
+  airspaceTimeRanges,
+  setAirspaceTimeRanges,
+  activeAirspaceLayer,
+  setActiveAirspaceLayer
 }: WorkspaceLeftProps) {
   const [activeSortieTab, setActiveSortieTab] = useState('current'); // 'current' | 'plan'
   const [activeRecordTab, setActiveRecordTab] = useState('record'); // 'record' | 'route' | 'layer'
@@ -192,8 +204,8 @@ export default function WorkspaceLeft({
   const timelineBoxRef = useRef<HTMLDivElement>(null);
 
   // New states for selected airspaces
-  const [selectedAirspaceIds, setSelectedAirspaceIds] = useState<string[]>([]);
-  const [airspaceTimeRanges, setAirspaceTimeRanges] = useState<Record<string, string>>({});
+  // const [selectedAirspaceIds, setSelectedAirspaceIds] = useState<string[]>([]);
+  // const [airspaceTimeRanges, setAirspaceTimeRanges] = useState<Record<string, string>>({});
   const [selectedAirspaceId, setSelectedAirspaceId] = useState<string | null>(null);
 
   const allAvailableAirspaces = Array.from({ length: 26 }, (_, i) => ({
@@ -940,6 +952,52 @@ export default function WorkspaceLeft({
                       </div>
                     </div>
                     <Switch checked={activeLayers.potential1} onChange={() => setActiveLayers(prev => ({...prev, potential1: !prev.potential1}))} className="shrink-0" />
+                    <MoreMenu />
+                  </DraggableAttachmentItem>
+                </div>
+              </div>
+
+              <div className="layer-section airspace mt-4">
+                <div className="layer-section-head">
+                  <div className="layer-title-wrap">
+                    <span className="layer-accent bg-[#2F63F6]"></span>
+                    <span className="layer-title">空域图层</span>
+                  </div>
+                  <button className="layer-add-btn" aria-label="新增">+</button>
+                </div>
+
+                <div className="layer-list">
+                  <DraggableAttachmentItem
+                    item={{
+                      objectId: 'airspace-qinghai',
+                      objectType: AttachmentObjectType.AIRSPACE,
+                      objectName: '青海地区空域网格',
+                      objectDisplayName: '青海地区空域网格',
+                      previewThumbnailUrl: 'https://picsum.photos/seed/airspace/40/40',
+                      draggable: true,
+                      isDeleted: false,
+                      isDraft: false,
+                      hasPermission: true,
+                    }}
+                    className="layer-item"
+                  >
+                    <div className="layer-item-main flex-1">
+                      <div className="flex items-center gap-3 w-full">
+                        <div className="w-10 h-10 bg-[#F0F4FA] rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                          <svg viewBox="0 0 24 24" className="w-6 h-6 text-[#2F63F6] fill-none stroke-current stroke-2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                          </svg>
+                        </div>
+                        <div className="flex flex-col min-w-0 flex-1 justify-center">
+                          <div className="flex items-center gap-2">
+                            <span className="layer-index">01.</span>
+                            <span className="layer-name">青海地区空域网格</span>
+                            <span className="layer-badge shrink-0 bg-blue-50 text-blue-600 border-blue-100">演示数据</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <Switch checked={activeAirspaceLayer} onChange={() => setActiveAirspaceLayer(!activeAirspaceLayer)} className="shrink-0" />
                     <MoreMenu />
                   </DraggableAttachmentItem>
                 </div>
