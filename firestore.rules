@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: messages
+    // Document ID: auto-generated
+    // Fields:
+    //   - conversationId: string (required)
+    //   - messageType: string (required)
+    //   - sentAt: string
+    //   - senderId: string
+    //   - senderName: string
+    //   - text: string
+    //   - attachmentId: string
+    //   - objectSnapshotId: string
+    //   - objectId: string
+    //   - objectType: string
+    //   - attachmentTypeLabel: string
+    //   - objectName: string
+    //   - objectDisplayName: string
+    //   - previewThumbnailUrl: string
+    //   - sortieId: string
+    //   - sortieName: string
+    //   - actionButtons: list
+    //   - status: map
+    //   - createdAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function isValidMessage() {
+      return hasRequiredFields(['conversationId', 'messageType', 'createdAt']) &&
+             request.resource.data.messageType in ['TEXT', 'ATTACHMENT', 'SYSTEM'] &&
+             request.resource.data.createdAt is timestamp;
+    }
+
+    match /messages/{messageId} {
+      // For this prototype, we allow any authenticated user to read and write messages.
+      // In a real app, we would restrict this to users in the conversation.
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidMessage();
+      allow update: if isAuthenticated() && isValidMessage();
+      allow delete: if false; // Messages cannot be deleted
+    }
+  }
+}

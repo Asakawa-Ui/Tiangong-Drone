@@ -90,39 +90,178 @@ function CustomTimePicker({ value, onChange }: { value: string, onChange: (val: 
   );
 }
 
-function MoreMenu() {
+function DownloadFormatDialog({ 
+  isOpen, 
+  onClose, 
+  onConfirm 
+}: { 
+  isOpen: boolean, 
+  onClose: () => void, 
+  onConfirm: (format: 'json' | 'csv') => void 
+}) {
+  const [format, setFormat] = useState<'json' | 'csv'>('json');
+
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
+      <div className="w-[320px] uav-glass rounded-[24px] p-6 shadow-2xl border border-white/40 flex flex-col gap-6 animate-in fade-in zoom-in duration-200">
+        <div className="flex flex-col gap-2">
+          <h3 className="text-[18px] font-bold text-[#1f2937] text-center">选择下载格式</h3>
+          <p className="text-[14px] text-[#6b7280] text-center">请选择您希望导出的文件格式</p>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <div 
+            className={`flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition-all ${format === 'json' ? 'border-[#2F63F6] bg-blue-50/30' : 'border-transparent bg-white/40 hover:bg-white/60'}`}
+            onClick={() => setFormat('json')}
+          >
+            <div className="flex flex-col">
+              <span className="font-bold text-[#1f2937]">JSON 格式</span>
+              <span className="text-[12px] text-[#9ca3af]">适用于程序解析与备份</span>
+            </div>
+            <Radio checked={format === 'json'} onChange={() => setFormat('json')} />
+          </div>
+
+          <div 
+            className={`flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition-all ${format === 'csv' ? 'border-[#2F63F6] bg-blue-50/30' : 'border-transparent bg-white/40 hover:bg-white/60'}`}
+            onClick={() => setFormat('csv')}
+          >
+            <div className="flex flex-col">
+              <span className="font-bold text-[#1f2937]">CSV 格式</span>
+              <span className="text-[12px] text-[#9ca3af]">适用于 Excel 查看与分析</span>
+            </div>
+            <Radio checked={format === 'csv'} onChange={() => setFormat('csv')} />
+          </div>
+        </div>
+
+        <div className="flex gap-3 mt-2">
+          <Button variant="outline" className="flex-1 rounded-xl h-11" onClick={onClose}>取消</Button>
+          <Button className="flex-1 rounded-xl h-11" onClick={() => onConfirm(format)}>确认下载</Button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+function MoreMenu({ showDownload = false }: { showDownload?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDownloadDialogOpen, setIsDownloadDialogOpen] = useState(false);
+  const triggerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
+
+  const handleDownload = (format: 'json' | 'csv') => {
+    const mockData = {
+      name: "预飞航线数据",
+      timestamp: new Date().toISOString(),
+      points: [
+        { lat: 36.5, lng: 101.2, alt: 5000 },
+        { lat: 36.6, lng: 101.4, alt: 5200 },
+        { lat: 36.7, lng: 101.6, alt: 5100 }
+      ]
+    };
+
+    let content = "";
+    let fileName = `route_data_${new Date().getTime()}`;
+
+    if (format === 'json') {
+      content = JSON.stringify(mockData, null, 2);
+      fileName += ".json";
+    } else {
+      content = "name,timestamp,lat,lng,alt\n";
+      mockData.points.forEach(p => {
+        content += `${mockData.name},${mockData.timestamp},${p.lat},${p.lng},${p.alt}\n`;
+      });
+      fileName += ".csv";
+    }
+
+    const blob = new Blob([content], { type: format === 'json' ? 'application/json' : 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    setIsDownloadDialogOpen(false);
+    setIsOpen(false);
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      if (
+        triggerRef.current && !triggerRef.current.contains(event.target as Node) &&
+        menuRef.current && !menuRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
+
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      if (triggerRef.current) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        const menuWidth = 96;
+        const menuHeight = showDownload ? 124 : 84;
+        
+        let top = rect.bottom + 4;
+        let left = rect.right - menuWidth;
+
+        if (top + menuHeight > window.innerHeight) {
+          top = rect.top - menuHeight - 4;
+        }
+
+        if (left < 0) {
+          left = 4;
+        }
+
+        setCoords({ top, left });
+      }
     }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen, showDownload]);
 
   return (
-    <div className="more-wrap relative no-drag" ref={menuRef}>
+    <div className="more-wrap no-drag" ref={triggerRef}>
       <button 
-        className="more-btn" 
+        className={`more-btn ${isOpen ? 'active' : ''}`}
         aria-label="更多"
         onClick={() => setIsOpen(!isOpen)}
       >
         <MoreVertical size={18} />
       </button>
-      {isOpen && (
-        <div className="absolute right-0 top-full mt-1 w-24 uav-glass rounded-2xl p-1.5 z-50 flex flex-col gap-1">
+      {isOpen && createPortal(
+        <div 
+          ref={menuRef}
+          className="fixed w-24 uav-glass rounded-2xl p-1.5 z-[9999] flex flex-col gap-1 shadow-xl border border-white/20"
+          style={{ 
+            top: coords.top, 
+            left: coords.left,
+          }}
+        >
+          {showDownload && (
+            <button 
+              className="px-3 py-2 text-[13px] text-[#2F63F6] hover:bg-blue-50/50 rounded-xl text-center font-bold transition-colors"
+              onClick={() => setIsDownloadDialogOpen(true)}
+            >
+              下载
+            </button>
+          )}
           <button className="px-3 py-2 text-[13px] text-[#4b5563] hover:bg-white/50 rounded-xl text-center font-bold transition-colors">编辑</button>
           <button className="px-3 py-2 text-[13px] text-[#e14d39] hover:bg-red-50/50 rounded-xl text-center font-bold transition-colors">删除</button>
-        </div>
+        </div>,
+        document.body
       )}
+
+      <DownloadFormatDialog 
+        isOpen={isDownloadDialogOpen} 
+        onClose={() => setIsDownloadDialogOpen(false)} 
+        onConfirm={handleDownload}
+      />
     </div>
   );
 }
@@ -576,13 +715,10 @@ export default function WorkspaceLeft({
                         {isLoading ? '加载中...' : currentSortie?.code}
                       </div>
                     </div>
-                    <div className="w-full shrink-0 mt-3 flex gap-2">
-                      <Button variant="outline" className="flex-1">
-                        详情
-                      </Button>
+                    <div className="w-full shrink-0 mt-3 flex justify-center">
                       <Button 
                         onClick={() => setExpandedView('sortie')}
-                        className="flex-1"
+                        className="w-[120px]"
                       >
                         切换
                       </Button>
@@ -602,13 +738,13 @@ export default function WorkspaceLeft({
                     </div>
                     <div className="w-full shrink-0 mt-3 flex gap-2">
                       <Button variant="outline" className="flex-1">
-                        详情
+                        新增
                       </Button>
                       <Button 
                         onClick={() => setExpandedView('plan')}
                         className="flex-1"
                       >
-                        切换
+                        换绑
                       </Button>
                     </div>
                   </div>
@@ -820,7 +956,7 @@ export default function WorkspaceLeft({
                       </div>
                     </div>
                     <Radio checked={activeRoute === v.id} onChange={() => setActiveRoute?.(v.id)} className="shrink-0" />
-                    <MoreMenu />
+                    <MoreMenu showDownload={true} />
                   </DraggableAttachmentItem>
                 ))}
               </div>
@@ -845,8 +981,8 @@ export default function WorkspaceLeft({
                     item={{
                       objectId: 'danger-1',
                       objectType: AttachmentObjectType.DANGER_ZONE,
-                      objectName: '预警产品-强对流危险区',
-                      objectDisplayName: '预警产品-强对流危险区',
+                      objectName: '01 危险区自动产品',
+                      objectDisplayName: '01 危险区自动产品',
                       previewThumbnailUrl: 'https://picsum.photos/seed/danger1/40/40',
                       draggable: true,
                       isDeleted: false,
@@ -864,9 +1000,8 @@ export default function WorkspaceLeft({
                         </div>
                         <div className="flex flex-col min-w-0 flex-1 justify-center">
                           <div className="flex items-center gap-2">
-                            <span className="layer-index">01.</span>
-                            <span className="layer-name">预警产品-强对流危险区</span>
-                            <span className="layer-badge shrink-0">系统生成</span>
+                            <span className="layer-name">01 危险区自动产品</span>
+                            <span className="layer-badge shrink-0">系统</span>
                           </div>
                         </div>
                       </div>
@@ -879,8 +1014,8 @@ export default function WorkspaceLeft({
                     item={{
                       objectId: 'danger-2',
                       objectType: AttachmentObjectType.DANGER_ZONE,
-                      objectName: '预警产品-闪电预警区',
-                      objectDisplayName: '预警产品-闪电预警区',
+                      objectName: '02 临时绘制危险区',
+                      objectDisplayName: '02 临时绘制危险区',
                       previewThumbnailUrl: 'https://picsum.photos/seed/danger2/40/40',
                       draggable: true,
                       isDeleted: false,
@@ -898,9 +1033,7 @@ export default function WorkspaceLeft({
                         </div>
                         <div className="flex flex-col min-w-0 flex-1 justify-center">
                           <div className="flex items-center gap-2">
-                            <span className="layer-index">02.</span>
-                            <span className="layer-name">预警产品-闪电预警区</span>
-                            <span className="layer-badge shrink-0">系统生成</span>
+                            <span className="layer-name">02 临时绘制危险区</span>
                           </div>
                         </div>
                       </div>
@@ -925,8 +1058,8 @@ export default function WorkspaceLeft({
                     item={{
                       objectId: 'potential-1',
                       objectType: AttachmentObjectType.POTENTIAL_ZONE,
-                      objectName: '数值模式-潜力区',
-                      objectDisplayName: '数值模式-潜力区',
+                      objectName: '01 潜力区自动产品',
+                      objectDisplayName: '01 潜力区自动产品',
                       previewThumbnailUrl: 'https://picsum.photos/seed/potential1/40/40',
                       draggable: true,
                       isDeleted: false,
@@ -944,60 +1077,13 @@ export default function WorkspaceLeft({
                         </div>
                         <div className="flex flex-col min-w-0 flex-1 justify-center">
                           <div className="flex items-center gap-2">
-                            <span className="layer-index">01.</span>
-                            <span className="layer-name">数值模式-潜力区</span>
-                            <span className="layer-badge shrink-0">系统生成</span>
+                            <span className="layer-name">01 潜力区自动产品</span>
+                            <span className="layer-badge shrink-0">系统</span>
                           </div>
                         </div>
                       </div>
                     </div>
                     <Switch checked={activeLayers.potential1} onChange={() => setActiveLayers(prev => ({...prev, potential1: !prev.potential1}))} className="shrink-0" />
-                    <MoreMenu />
-                  </DraggableAttachmentItem>
-                </div>
-              </div>
-
-              <div className="layer-section airspace mt-4">
-                <div className="layer-section-head">
-                  <div className="layer-title-wrap">
-                    <span className="layer-accent bg-[#2F63F6]"></span>
-                    <span className="layer-title">空域图层</span>
-                  </div>
-                  <button className="layer-add-btn" aria-label="新增">+</button>
-                </div>
-
-                <div className="layer-list">
-                  <DraggableAttachmentItem
-                    item={{
-                      objectId: 'airspace-qinghai',
-                      objectType: AttachmentObjectType.AIRSPACE,
-                      objectName: '青海地区空域网格',
-                      objectDisplayName: '青海地区空域网格',
-                      previewThumbnailUrl: 'https://picsum.photos/seed/airspace/40/40',
-                      draggable: true,
-                      isDeleted: false,
-                      isDraft: false,
-                      hasPermission: true,
-                    }}
-                    className="layer-item"
-                  >
-                    <div className="layer-item-main flex-1">
-                      <div className="flex items-center gap-3 w-full">
-                        <div className="w-10 h-10 bg-[#F0F4FA] rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
-                          <svg viewBox="0 0 24 24" className="w-6 h-6 text-[#2F63F6] fill-none stroke-current stroke-2">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                          </svg>
-                        </div>
-                        <div className="flex flex-col min-w-0 flex-1 justify-center">
-                          <div className="flex items-center gap-2">
-                            <span className="layer-index">01.</span>
-                            <span className="layer-name">青海地区空域网格</span>
-                            <span className="layer-badge shrink-0 bg-blue-50 text-blue-600 border-blue-100">演示数据</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <Switch checked={activeAirspaceLayer} onChange={() => setActiveAirspaceLayer(!activeAirspaceLayer)} className="shrink-0" />
                     <MoreMenu />
                   </DraggableAttachmentItem>
                 </div>

@@ -304,6 +304,41 @@ export default function MapArea({
           />
         )}
         
+        {/* 渲染空域网格 (默认显示，在气象产品之上，战术图层之下) */}
+        <GeoJSON 
+          key={`airspace-grids-${currentTime}-${selectedAirspaceIds.join(',')}`}
+          data={airspaceGrids as any}
+          style={(feature) => {
+            const id = feature?.id as string;
+            const isSelected = selectedAirspaceIds.includes(id);
+            const timeRange = airspaceTimeRanges[id];
+            const isActive = isSelected && timeRange && isTimeActive(timeRange);
+            
+            return {
+              fillColor: isActive ? '#10B981' : (isSelected ? '#3B82F6' : 'transparent'),
+              fillOpacity: (isActive || isSelected) ? 0.05 : 0,
+              color: isActive ? '#059669' : (isSelected ? '#2563EB' : '#94A3B8'),
+              weight: (isActive || isSelected) ? 2 : 1,
+              dashArray: ''
+            };
+          }}
+        />
+        {airspaceGrids.features.map((f: any) => (
+          <Marker 
+            key={`label-${f.id}`}
+            position={f.properties.center}
+            icon={L.divIcon({
+              html: `<div class="flex flex-col items-center justify-center">
+                <span class="text-[10px] font-bold ${selectedAirspaceIds.includes(f.id) ? 'text-blue-700' : 'text-gray-500'} bg-white/80 px-1 rounded shadow-sm">${f.properties.id}</span>
+              </div>`,
+              className: 'airspace-label',
+              iconSize: [30, 20],
+              iconAnchor: [15, 10]
+            })}
+            interactive={false}
+          />
+        ))}
+        
         {/* 渲染作业潜力区 */}
         {potentialZones && activeLayers?.potential1 && (
           <GeoJSON 
@@ -317,11 +352,12 @@ export default function MapArea({
             })}
             onEachFeature={(feature, layer) => {
               layer.bindPopup(`
-                <div class="p-2">
-                  <h3 class="font-bold text-sm mb-1">${feature.properties.name}</h3>
-                  <p class="text-xs text-gray-600">潜力等级: ${feature.properties.rating === 'excellent' ? '优' : '良'}</p>
+                <div style="min-width: 160px; padding: 4px;">
+                  <h3 style="font-weight: bold; font-size: 14px; margin-bottom: 4px; color: #1f2937;">${feature.properties.name}</h3>
+                  <p style="font-size: 12px; color: #4b5563; margin: 2px 0;">潜力等级: ${feature.properties.rating === 'excellent' ? '优' : '良'}</p>
+                  <p style="font-size: 12px; color: #4b5563; margin: 2px 0;">生效时间: 14:00 - 18:00</p>
                 </div>
-              `);
+              `, { minWidth: 160 });
             }}
           />
         )}
@@ -343,11 +379,12 @@ export default function MapArea({
                 }}
                 onEachFeature={(feature, layer) => {
                   layer.bindPopup(`
-                    <div class="p-2">
-                      <h3 class="font-bold text-sm mb-1 text-yellow-700">${feature.properties.name}</h3>
-                      <p class="text-xs text-gray-600">危险等级: 高</p>
+                    <div style="min-width: 160px; padding: 4px;">
+                      <h3 style="font-weight: bold; font-size: 14px; margin-bottom: 4px; color: #b45309;">${feature.properties.name}</h3>
+                      <p style="font-size: 12px; color: #4b5563; margin: 2px 0;">危险等级: 高</p>
+                      <p style="font-size: 12px; color: #4b5563; margin: 2px 0;">生效时间: 12:00 - 16:00</p>
                     </div>
-                  `);
+                  `, { minWidth: 160 });
                 }}
               />
             )}
@@ -372,11 +409,12 @@ export default function MapArea({
                 }}
                 onEachFeature={(feature, layer) => {
                   layer.bindPopup(`
-                    <div class="p-2">
-                      <h3 class="font-bold text-sm mb-1 text-amber-600">${feature.properties.name}</h3>
-                      <p class="text-xs text-gray-600">危险等级: 中</p>
+                    <div style="min-width: 160px; padding: 4px;">
+                      <h3 style="font-weight: bold; font-size: 14px; margin-bottom: 4px; color: #92400e;">${feature.properties.name}</h3>
+                      <p style="font-size: 12px; color: #4b5563; margin: 2px 0;">危险等级: 中</p>
+                      <p style="font-size: 12px; color: #4b5563; margin: 2px 0;">生效时间: 13:30 - 15:30</p>
                     </div>
-                  `);
+                  `, { minWidth: 160 });
                 }}
               />
             )}
@@ -390,45 +428,6 @@ export default function MapArea({
           </>
         )}
         
-        {/* 渲染空域网格 */}
-        {activeAirspaceLayer && (
-          <>
-            <GeoJSON 
-              key={`airspace-grids-${currentTime}`}
-              data={airspaceGrids as any}
-              style={(feature) => {
-                const id = feature?.id as string;
-                const isSelected = selectedAirspaceIds.includes(id);
-                const timeRange = airspaceTimeRanges[id];
-                const isActive = isSelected && timeRange && isTimeActive(timeRange);
-                
-                return {
-                  fillColor: isActive ? '#10B981' : (isSelected ? '#3B82F6' : 'transparent'),
-                  fillOpacity: (isActive || isSelected) ? 0.2 : 0,
-                  color: isActive ? '#059669' : (isSelected ? '#2563EB' : '#94A3B8'),
-                  weight: (isActive || isSelected) ? 2 : 1,
-                  dashArray: ''
-                };
-              }}
-            />
-            {airspaceGrids.features.map((f: any) => (
-              <Marker 
-                key={`label-${f.id}`}
-                position={f.properties.center}
-                icon={L.divIcon({
-                  html: `<div class="flex flex-col items-center justify-center">
-                    <span class="text-[10px] font-bold ${selectedAirspaceIds.includes(f.id) ? 'text-blue-700' : 'text-gray-500'} bg-white/80 px-1 rounded shadow-sm">${f.properties.id}</span>
-                  </div>`,
-                  className: 'airspace-label',
-                  iconSize: [30, 20],
-                  iconAnchor: [15, 10]
-                })}
-                interactive={false}
-              />
-            ))}
-          </>
-        )}
-
         {/* 渲染当前方案轨迹 (蓝色虚线) */}
         {planTrack && sortieVisibility?.[currentSortie?.id] !== false && isRouteVisible && (
           <GeoJSON 

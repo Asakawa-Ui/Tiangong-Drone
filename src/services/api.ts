@@ -443,7 +443,7 @@ export const api = {
           type: "Feature",
           properties: {
             type: "convection",
-            name: "强对流危险区-01",
+            name: "01 危险区自动产品",
             level: "high",
             icon: "cloud-lightning"
           },
@@ -460,7 +460,7 @@ export const api = {
           type: "Feature",
           properties: {
             type: "lightning",
-            name: "闪电预警区-02",
+            name: "02 临时绘制危险区",
             level: "medium",
             icon: "zap"
           },
@@ -486,7 +486,7 @@ export const api = {
           type: "Feature",
           properties: {
             rating: "excellent", // 优
-            name: "作业潜力区-01",
+            name: "01 潜力区自动产品",
             color: "#10B981" // emerald-500
           },
           geometry: {

@@ -876,7 +876,8 @@
   transition: background 0.18s ease, color 0.18s ease;
 }
 
-.more-btn:hover {
+.more-btn:hover,
+.more-btn.active {
   background: #e8edf6;
   color: #455066;
 }

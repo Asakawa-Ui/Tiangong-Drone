@@ -1,0 +1,37 @@
+{
+  "entities": {
+    "Message": {
+      "title": "Message",
+      "description": "A chat message in the system",
+      "type": "object",
+      "properties": {
+        "conversationId": { "type": "string" },
+        "messageType": { "type": "string", "enum": ["TEXT", "ATTACHMENT", "SYSTEM"] },
+        "sentAt": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "text": { "type": "string" },
+        "attachmentId": { "type": "string" },
+        "objectSnapshotId": { "type": "string" },
+        "objectId": { "type": "string" },
+        "objectType": { "type": "string" },
+        "attachmentTypeLabel": { "type": "string" },
+        "objectName": { "type": "string" },
+        "objectDisplayName": { "type": "string" },
+        "previewThumbnailUrl": { "type": "string" },
+        "sortieId": { "type": "string" },
+        "sortieName": { "type": "string" },
+        "actionButtons": { "type": "array" },
+        "status": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["conversationId", "messageType", "createdAt"]
+    }
+  },
+  "firestore": {
+    "messages": {
+      "schema": { "$ref": "#/entities/Message" },
+      "description": "Chat messages"
+    }
+  }
+}
