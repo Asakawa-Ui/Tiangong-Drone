@@ -276,7 +276,7 @@ export default function MapArea({
         onClose={() => setPanelStates?.(prev => ({ ...prev, uavVideo: false }))} 
         currentSortie={currentSortie} 
       />
-      <MapChatDock isFullscreen={isFullscreen} />
+      {/* <MapChatDock isFullscreen={isFullscreen} /> */}
       
       <MapContainer
         center={[35.5, 96.0]}
