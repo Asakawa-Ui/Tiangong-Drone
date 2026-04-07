@@ -194,7 +194,7 @@ export default function MapNotifications({ isFullscreen, currentSortie }: MapNot
                 </p>
                 <div className="flex gap-2.5">
                   <button className="bg-[#A32A36] hover:bg-[#B93240] text-white px-4 py-1.5 rounded-lg text-[14px] font-bold transition-colors">
-                    查看空域批复
+                    查看空域
                   </button>
                   <button className="bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#1F2937] px-4 py-1.5 rounded-lg text-[14px] font-bold transition-colors">
                     调整航线
